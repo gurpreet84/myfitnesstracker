@@ -200,11 +200,11 @@ export default function ProfileSetup({ profile, onSave }: Props) {
       {/* AI API Key */}
       <div className="rounded-xl p-5" style={{ background: '#1e293b' }}>
         <h3 className="font-semibold text-slate-200 mb-2 flex items-center gap-2">
-          <Key size={18} className="text-purple-400" /> AI Food Lookup (Claude API)
+          <Key size={18} className="text-purple-400" /> AI Food Lookup (OpenAI API)
         </h3>
         <p className="text-xs text-slate-400 mb-4">
-          Enter your Anthropic API key to enable AI-powered nutritional lookup for any food not in the database.
-          Your key is stored locally and never sent anywhere except Anthropic's API.
+          Enter your OpenAI API key to enable AI-powered nutritional lookup for any food not in the database.
+          Your key is stored locally and never sent anywhere except OpenAI's API.
         </p>
         <div className="flex gap-2">
           <div className="relative flex-1">
@@ -212,7 +212,7 @@ export default function ProfileSetup({ profile, onSave }: Props) {
               type={showKey ? 'text' : 'password'}
               className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none pr-10"
               style={{ background: '#0f172a', border: '1px solid #334155' }}
-              placeholder="sk-ant-..."
+              placeholder="sk-..."
               value={apiKey}
               onChange={e => setApiKey(e.target.value)}
             />
@@ -235,7 +235,7 @@ export default function ProfileSetup({ profile, onSave }: Props) {
         </div>
         {apiKey && (
           <p className="text-xs text-green-400 mt-2">
-            ✓ API key configured — AI food lookup is enabled in the Food Tracker.
+            ✓ OpenAI API key configured — AI food lookup is enabled in the Food Tracker.
           </p>
         )}
       </div>

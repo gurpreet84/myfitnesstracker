@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 
 export interface AiFoodResult {
   name: string;
@@ -12,17 +12,21 @@ export interface AiFoodResult {
 }
 
 export async function lookupFoodNutrition(foodName: string, apiKey: string): Promise<AiFoodResult> {
-  const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
+  const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
 
-  const response = await client.messages.create({
-    model: 'claude-haiku-4-5',
+  const response = await client.chat.completions.create({
+    model: 'gpt-4o-mini',
     max_tokens: 512,
     messages: [
       {
+        role: 'system',
+        content: 'You are a nutritionist database. Always respond with ONLY a valid JSON object, no markdown, no explanation.',
+      },
+      {
         role: 'user',
-        content: `You are a nutritionist database. Return ONLY a valid JSON object (no markdown, no explanation) with nutritional info for: "${foodName}".
+        content: `Return nutritional info for: "${foodName}".
 
-Use this exact structure:
+Use this exact JSON structure:
 {
   "name": "Full descriptive name with serving size",
   "calories": <number>,
@@ -34,18 +38,17 @@ Use this exact structure:
   "servingSize": "standard serving description"
 }
 
-Use standard serving size (e.g. 1 cup, 100g, 1 piece). If glycemic index is not applicable (pure protein/fat), use 0.`,
+Use a standard serving size (e.g. 1 cup, 100g, 1 piece). If glycemic index is not applicable (pure protein/fat), use 0.`,
       },
     ],
   });
 
-  const text = response.content[0].type === 'text' ? response.content[0].text : '';
+  const text = response.choices[0]?.message?.content ?? '';
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error('Could not parse nutritional data from AI response');
 
   const data = JSON.parse(jsonMatch[0]) as AiFoodResult;
 
-  // Validate required numeric fields
   const required: (keyof AiFoodResult)[] = ['calories', 'glycemicIndex', 'glycemicLoad', 'carbs', 'protein', 'fat'];
   for (const field of required) {
     if (typeof data[field] !== 'number' || isNaN(data[field] as number)) {
