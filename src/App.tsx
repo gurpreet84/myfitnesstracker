@@ -9,7 +9,8 @@ import type { ViewType } from './types';
 import { supabase } from './utils/supabase';
 import { setSyncUser, clearLocalData, STORAGE_KEYS } from './utils/storage';
 import { getFoodEntries, getWorkoutEntries, getWeightEntries, getProfile, getGlucoseEntries } from './utils/storage';
-import { fetchFoodEntries, fetchWorkoutEntries, fetchWeightEntries, fetchProfile, fetchGlucoseEntries } from './utils/db';
+import { fetchFoodEntries, fetchWorkoutEntries, fetchWeightEntries, fetchProfile, fetchGlucoseEntries,
+         upsertFoodEntry, upsertWorkoutEntry, upsertWeightEntry, upsertGlucoseEntry } from './utils/db';
 import Auth from './components/Auth';
 import Dashboard from './components/Dashboard';
 import FoodTracker from './components/FoodTracker';
@@ -45,21 +46,32 @@ async function loadFromSupabase(uid: string) {
     fetchProfile(uid).catch(() => null),
   ]);
 
-  // Merge remote into local: remote wins on id conflicts, local-only entries survive.
-  // If fetch threw (null) we leave localStorage untouched.
-  function merge<T extends { id: string }>(key: string, remote: T[] | null) {
-    if (remote === null) return;
+  // Merge remote into local (remote wins on id conflicts, local-only entries survive),
+  // then return the set of ids that exist only locally so we can push them up.
+  function merge<T extends { id: string }>(key: string, remote: T[] | null): T[] {
+    if (remote === null) return [];
     const local: T[] = JSON.parse(localStorage.getItem(key) || '[]');
+    const remoteIds = new Set(remote.map(e => e.id));
+    const localOnly = local.filter(e => !remoteIds.has(e.id));
     const map = new Map(local.map(e => [e.id, e]));
     remote.forEach(e => map.set(e.id, e));
     localStorage.setItem(key, JSON.stringify([...map.values()]));
+    return localOnly;
   }
 
-  merge(STORAGE_KEYS.food,    food);
-  merge(STORAGE_KEYS.workout, workout);
-  merge(STORAGE_KEYS.weight,  weight);
-  merge(STORAGE_KEYS.glucose, glucose);
+  const unsynced = {
+    food:    merge(STORAGE_KEYS.food,    food),
+    workout: merge(STORAGE_KEYS.workout, workout),
+    weight:  merge(STORAGE_KEYS.weight,  weight),
+    glucose: merge(STORAGE_KEYS.glucose, glucose),
+  };
   if (profile) localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(profile));
+
+  // Push local-only entries to Supabase so they survive future logouts.
+  unsynced.food   .forEach(e => upsertFoodEntry(uid, e).catch(() => {}));
+  unsynced.workout.forEach(e => upsertWorkoutEntry(uid, e).catch(() => {}));
+  unsynced.weight .forEach(e => upsertWeightEntry(uid, e).catch(() => {}));
+  unsynced.glucose.forEach(e => upsertGlucoseEntry(uid, e).catch(() => {}));
 }
 
 export default function App() {
