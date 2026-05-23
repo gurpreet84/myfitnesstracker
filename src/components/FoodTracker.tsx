@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { Plus, Trash2, Apple, Search } from 'lucide-react';
+import { Plus, Trash2, Apple, Search, Sparkles, Loader2 } from 'lucide-react';
 import type { FoodEntry } from '../types';
-import { saveFoodEntry, deleteFoodEntry, generateId } from '../utils/storage';
+import { saveFoodEntry, deleteFoodEntry, generateId, getApiKey } from '../utils/storage';
 import { getGlycemicCategory } from '../utils/calculations';
+import { lookupFoodNutrition } from '../utils/aiFood';
 
 interface Props {
   entries: FoodEntry[];
@@ -157,6 +158,8 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
 
   const dayEntries = entries
     .filter(e => e.date === selectedDate)
@@ -180,6 +183,38 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
     }));
     setSearch(food.name);
     setShowSuggestions(false);
+  }
+
+  async function lookupWithAI() {
+    const query = search.trim() || form.name.trim();
+    if (!query) return;
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      setAiError('No API key set. Go to Profile → AI Food Lookup to add your Anthropic API key.');
+      return;
+    }
+    setAiLoading(true);
+    setAiError('');
+    try {
+      const result = await lookupFoodNutrition(query, apiKey);
+      setForm(f => ({
+        ...f,
+        name: result.name,
+        calories: String(result.calories),
+        glycemicIndex: String(result.glycemicIndex),
+        glycemicLoad: String(result.glycemicLoad),
+        carbs: String(result.carbs),
+        protein: String(result.protein),
+        fat: String(result.fat),
+        servingSize: result.servingSize,
+      }));
+      setSearch(result.name);
+      setShowSuggestions(false);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'AI lookup failed. Check your API key.');
+    } finally {
+      setAiLoading(false);
+    }
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -251,16 +286,35 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
 
           {/* Search / quick fill */}
           <div className="relative">
-            <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: '#0f172a' }}>
-              <Search size={14} className="text-slate-400" />
-              <input
-                className="flex-1 bg-transparent text-sm text-slate-200 outline-none placeholder-slate-500"
-                placeholder="Search common foods to auto-fill..."
-                value={search}
-                onChange={e => { setSearch(e.target.value); setShowSuggestions(true); }}
-                onFocus={() => setShowSuggestions(true)}
-              />
+            <div className="flex gap-2">
+              <div className="flex-1 flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: '#0f172a' }}>
+                <Search size={14} className="text-slate-400 shrink-0" />
+                <input
+                  className="flex-1 bg-transparent text-sm text-slate-200 outline-none placeholder-slate-500"
+                  placeholder="Search foods or type any food name..."
+                  value={search}
+                  onChange={e => { setSearch(e.target.value); setShowSuggestions(true); setAiError(''); }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (filtered.length === 0 && search) lookupWithAI(); } }}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={lookupWithAI}
+                disabled={aiLoading || !search.trim()}
+                title="Ask AI for nutritional values"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-40"
+                style={{ background: '#7c3aed', color: '#fff' }}
+              >
+                {aiLoading
+                  ? <><Loader2 size={14} className="animate-spin" /> Looking up…</>
+                  : <><Sparkles size={14} /> Ask AI</>
+                }
+              </button>
             </div>
+            {aiError && (
+              <p className="text-xs text-red-400 mt-1 px-1">{aiError}</p>
+            )}
             {showSuggestions && search && filtered.length > 0 && (
               <div className="absolute z-10 mt-1 w-full rounded-lg overflow-hidden shadow-xl" style={{ background: '#0f172a', border: '1px solid #334155' }}>
                 {filtered.slice(0, 6).map(f => (
@@ -274,6 +328,17 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
                     <span className="text-slate-500">{f.calories} kcal | GI: {f.glycemicIndex || 'N/A'}</span>
                   </button>
                 ))}
+                {filtered.length === 0 && (
+                  <div className="px-4 py-3 text-xs text-slate-500 text-center">
+                    Not in database — click <span className="text-purple-400 font-medium">Ask AI</span> to look up nutritional values
+                  </div>
+                )}
+              </div>
+            )}
+            {showSuggestions && search && filtered.length === 0 && !aiLoading && (
+              <div className="mt-1 px-3 py-2 rounded-lg text-xs text-slate-400" style={{ background: '#0f172a', border: '1px solid #334155' }}>
+                "<span className="text-slate-200">{search}</span>" not found in database —
+                click <span className="text-purple-400 font-medium">Ask AI</span> to auto-fill nutritional values
               </div>
             )}
           </div>

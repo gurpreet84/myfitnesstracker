@@ -71,5 +71,9 @@ export const saveProfile = (profile: UserProfile): void => {
   localStorage.setItem(KEYS.profile, JSON.stringify(profile));
 };
 
+// Profile
+export const getApiKey = (): string => localStorage.getItem('fit_anthropic_key') ?? '';
+export const saveApiKey = (key: string): void => localStorage.setItem('fit_anthropic_key', key);
+
 export const generateId = (): string =>
   `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;

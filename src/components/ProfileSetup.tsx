@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { User, Save } from 'lucide-react';
+import { User, Save, Key, Eye, EyeOff } from 'lucide-react';
 import type { UserProfile } from '../types';
-import { saveProfile } from '../utils/storage';
+import { saveProfile, getApiKey, saveApiKey } from '../utils/storage';
 import { calculateTDEE, calculateBMI } from '../utils/calculations';
 
 interface Props {
@@ -24,6 +24,9 @@ const DEFAULT: UserProfile = {
 export default function ProfileSetup({ profile, onSave }: Props) {
   const [form, setForm] = useState<UserProfile>(profile || DEFAULT);
   const [saved, setSaved] = useState(false);
+  const [apiKey, setApiKey] = useState(getApiKey);
+  const [showKey, setShowKey] = useState(false);
+  const [keySaved, setKeySaved] = useState(false);
 
   const tdee = calculateTDEE(form);
   const bmi = calculateBMI(form.currentWeight, form.height);
@@ -39,6 +42,12 @@ export default function ProfileSetup({ profile, onSave }: Props) {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
     onSave();
+  }
+
+  function handleSaveKey() {
+    saveApiKey(apiKey.trim());
+    setKeySaved(true);
+    setTimeout(() => setKeySaved(false), 2000);
   }
 
   const activityLabels = {
@@ -186,6 +195,49 @@ export default function ProfileSetup({ profile, onSave }: Props) {
             {saved ? 'Saved!' : 'Save Profile'}
           </button>
         </form>
+      </div>
+
+      {/* AI API Key */}
+      <div className="rounded-xl p-5" style={{ background: '#1e293b' }}>
+        <h3 className="font-semibold text-slate-200 mb-2 flex items-center gap-2">
+          <Key size={18} className="text-purple-400" /> AI Food Lookup (Claude API)
+        </h3>
+        <p className="text-xs text-slate-400 mb-4">
+          Enter your Anthropic API key to enable AI-powered nutritional lookup for any food not in the database.
+          Your key is stored locally and never sent anywhere except Anthropic's API.
+        </p>
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <input
+              type={showKey ? 'text' : 'password'}
+              className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none pr-10"
+              style={{ background: '#0f172a', border: '1px solid #334155' }}
+              placeholder="sk-ant-..."
+              value={apiKey}
+              onChange={e => setApiKey(e.target.value)}
+            />
+            <button
+              type="button"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+              onClick={() => setShowKey(s => !s)}
+            >
+              {showKey ? <EyeOff size={14} /> : <Eye size={14} />}
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={handleSaveKey}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            style={{ background: keySaved ? '#22c55e' : '#7c3aed', color: '#fff' }}
+          >
+            {keySaved ? 'Saved!' : 'Save Key'}
+          </button>
+        </div>
+        {apiKey && (
+          <p className="text-xs text-green-400 mt-2">
+            ✓ API key configured — AI food lookup is enabled in the Food Tracker.
+          </p>
+        )}
       </div>
     </div>
   );
