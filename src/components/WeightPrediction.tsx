@@ -15,9 +15,9 @@ interface Props {
 }
 
 const TOOLTIP_STYLE = {
-  contentStyle: { background: '#0f172a', border: '1px solid #334155', borderRadius: 8, fontSize: 12 },
-  labelStyle: { color: '#94a3b8' },
-  itemStyle: { color: '#e2e8f0' },
+  contentStyle: { background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 8, fontSize: 12 },
+  labelStyle: { color: 'var(--text2)' },
+  itemStyle: { color: 'var(--text)' },
 };
 
 function getBMICategory(bmi: number): { label: string; color: string } {
@@ -108,7 +108,7 @@ export default function WeightPrediction({ foodEntries, workoutEntries, weightEn
             color: '#0ea5e9',
           },
         ].map(c => (
-          <div key={c.label} className="rounded-xl p-4" style={{ background: '#1e293b' }}>
+          <div key={c.label} className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
             <div className="text-xs text-slate-400 mb-2">{c.label}</div>
             <div className="text-xl font-bold" style={{ color: c.color }}>{c.value}</div>
             <div className="text-xs text-slate-500 mt-1">{c.sub}</div>
@@ -117,7 +117,7 @@ export default function WeightPrediction({ foodEntries, workoutEntries, weightEn
       </div>
 
       {/* Main prediction chart */}
-      <div className="rounded-xl p-5" style={{ background: '#1e293b' }}>
+      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
         <h3 className="text-sm font-semibold text-slate-300 mb-1">Predictive Weight Loss Chart</h3>
         <p className="text-xs text-slate-500 mb-4">
           Based on your 7-day average deficit of <span className="text-green-400">{Math.round(effectiveDeficit)} kcal/day</span>.
@@ -131,7 +131,7 @@ export default function WeightPrediction({ foodEntries, workoutEntries, weightEn
                 <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.04)" />
             <XAxis
               dataKey="date"
               tick={{ fill: '#64748b', fontSize: 10 }}
@@ -150,7 +150,7 @@ export default function WeightPrediction({ foodEntries, workoutEntries, weightEn
               {...TOOLTIP_STYLE}
               formatter={(v, name) => [`${v} kg`, name as string]}
             />
-            <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8', paddingTop: 10 }} />
+            <Legend wrapperStyle={{ fontSize: 11, color: 'var(--text2)', paddingTop: 10 }} />
             {targetWeight && (
               <ReferenceLine
                 y={targetWeight}
@@ -205,7 +205,7 @@ export default function WeightPrediction({ foodEntries, workoutEntries, weightEn
       </div>
 
       {/* Scenario comparison table */}
-      <div className="rounded-xl p-5" style={{ background: '#1e293b' }}>
+      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
         <h3 className="text-sm font-semibold text-slate-300 mb-4">Scenario Comparison</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -232,7 +232,7 @@ export default function WeightPrediction({ foodEntries, workoutEntries, weightEn
       </div>
 
       {/* BMI gauge */}
-      <div className="rounded-xl p-5" style={{ background: '#1e293b' }}>
+      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
         <h3 className="text-sm font-semibold text-slate-300 mb-4">BMI Overview</h3>
         <div className="grid grid-cols-2 gap-6">
           {[
@@ -275,7 +275,7 @@ export default function WeightPrediction({ foodEntries, workoutEntries, weightEn
       </div>
 
       {/* Motivation insight */}
-      <div className="rounded-xl p-4" style={{ background: '#1e293b', border: '1px solid #334155' }}>
+      <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--border-hi)' }}>
         <h4 className="text-sm font-semibold text-slate-300 mb-2">💡 Insights</h4>
         <ul className="space-y-2 text-xs text-slate-400">
           {effectiveDeficit < 100 && (

@@ -19,29 +19,26 @@ import TrendAnalysis from './components/TrendAnalysis';
 import WeightPrediction from './components/WeightPrediction';
 import ProfileSetup from './components/ProfileSetup';
 
-const NAV_ITEMS: { view: ViewType; label: string; icon: React.ReactNode; color: string }[] = [
-  { view: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} />, color: '#2563eb' },
-  { view: 'food',      label: 'Food',      icon: <Apple size={18} />,           color: '#f59e0b' },
-  { view: 'workout',   label: 'Workout',   icon: <Dumbbell size={18} />,        color: '#7c3aed' },
-  { view: 'glucose',   label: 'Glucose',   icon: <Droplets size={18} />,        color: '#3b82f6' },
-  { view: 'trends',    label: 'Trends',    icon: <TrendingUp size={18} />,      color: '#22c55e' },
-  { view: 'prediction',label: 'Prediction',icon: <Brain size={18} />,           color: '#0ea5e9' },
-  { view: 'profile',   label: 'Profile',   icon: <User size={18} />,            color: '#64748b' },
+const NAV: { view: ViewType; label: string; icon: React.ReactNode; color: string; gradient: string }[] = [
+  { view: 'dashboard',  label: 'Dashboard',  icon: <LayoutDashboard size={17} />, color: '#4f8ef5', gradient: 'rgba(79,142,245,.15)' },
+  { view: 'food',       label: 'Food',        icon: <Apple size={17} />,           color: '#f0ac3c', gradient: 'rgba(240,172,60,.15)' },
+  { view: 'workout',    label: 'Workout',     icon: <Dumbbell size={17} />,        color: '#a855f7', gradient: 'rgba(168,85,247,.15)' },
+  { view: 'glucose',    label: 'Glucose',     icon: <Droplets size={17} />,        color: '#22d4e8', gradient: 'rgba(34,212,232,.15)' },
+  { view: 'trends',     label: 'Trends',      icon: <TrendingUp size={17} />,      color: '#2dd4a0', gradient: 'rgba(45,212,160,.15)' },
+  { view: 'prediction', label: 'Prediction',  icon: <Brain size={17} />,           color: '#7c6ff0', gradient: 'rgba(124,111,240,.15)' },
+  { view: 'profile',    label: 'Profile',     icon: <User size={17} />,            color: '#7e95b3', gradient: 'rgba(126,149,179,.15)' },
 ];
 
-function adjustDate(date: string, delta: number): string {
+function adjustDate(date: string, delta: number) {
   const d = new Date(date);
   d.setDate(d.getDate() + delta);
   return format(d, 'yyyy-MM-dd');
 }
 
-async function loadFromSupabase(userId: string) {
+async function loadFromSupabase(uid: string) {
   const [food, workout, weight, glucose, profile] = await Promise.all([
-    fetchFoodEntries(userId),
-    fetchWorkoutEntries(userId),
-    fetchWeightEntries(userId),
-    fetchGlucoseEntries(userId),
-    fetchProfile(userId),
+    fetchFoodEntries(uid), fetchWorkoutEntries(uid), fetchWeightEntries(uid),
+    fetchGlucoseEntries(uid), fetchProfile(uid),
   ]);
   localStorage.setItem(STORAGE_KEYS.food,    JSON.stringify(food));
   localStorage.setItem(STORAGE_KEYS.workout, JSON.stringify(workout));
@@ -51,9 +48,9 @@ async function loadFromSupabase(userId: string) {
 }
 
 export default function App() {
-  const [session, setSession]     = useState<Session | null>(null);
-  const [loading, setLoading]     = useState(true);
-  const [view, setView]           = useState<ViewType>('dashboard');
+  const [session, setSession]   = useState<Session | null>(null);
+  const [loading, setLoading]   = useState(true);
+  const [view, setView]         = useState<ViewType>('dashboard');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [, setTick] = useState(0);
   const refresh = useCallback(() => setTick(t => t + 1), []);
@@ -65,97 +62,90 @@ export default function App() {
   const profile        = getProfile();
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session) {
-        setSyncUser(session.user.id);
-        await loadFromSupabase(session.user.id);
-        setSession(session);
-        refresh();
-      }
+      if (session) { setSyncUser(session.user.id); await loadFromSupabase(session.user.id); setSession(session); refresh(); }
       setLoading(false);
     });
-
-    // Listen for auth changes (login / logout)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session) {
-        setSyncUser(session.user.id);
-        await loadFromSupabase(session.user.id);
-        setSession(session);
-        refresh();
-      } else {
-        setSyncUser(null);
-        clearLocalData();
-        setSession(null);
-        refresh();
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_e, session) => {
+      if (session) { setSyncUser(session.user.id); await loadFromSupabase(session.user.id); setSession(session); refresh(); }
+      else { setSyncUser(null); clearLocalData(); setSession(null); refresh(); }
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0f172a' }}>
-        <div className="text-center">
-          <Loader2 size={32} className="animate-spin text-blue-400 mx-auto mb-3" />
-          <p className="text-sm text-slate-400">Loading your data…</p>
-        </div>
+  if (loading) return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
+        <Loader2 size={32} style={{ color: 'var(--blue)', animation: 'spin 1s linear infinite', margin: '0 auto 12px' }} />
+        <p style={{ color: 'var(--text2)', fontSize: 14 }}>Loading your data…</p>
       </div>
-    );
-  }
+    </div>
+  );
 
   if (!session) return <Auth />;
 
   const isToday   = selectedDate === format(new Date(), 'yyyy-MM-dd');
-  const activeNav = NAV_ITEMS.find(n => n.view === view)!;
-  const needsProfile = !profile && view !== 'profile';
+  const activeNav = NAV.find(n => n.view === view)!;
+  const showDate  = ['food', 'workout', 'dashboard', 'glucose'].includes(view);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f172a', color: '#e2e8f0' }}>
-      {/* Header */}
-      <header style={{ background: '#0f172a', borderBottom: '1px solid #1e293b', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 16px' }}>
-          <div className="flex items-center justify-between h-14">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#2563eb' }}>
-                <Activity size={18} color="#fff" />
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}>
+
+      {/* ── Header ─────────────────────────────────────────────── */}
+      <header style={{
+        background: 'rgba(11,17,32,0.85)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid var(--border)',
+        position: 'sticky', top: 0, zIndex: 50,
+      }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 58 }}>
+
+            {/* Logo */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 10,
+                background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 0 16px rgba(99,102,241,.35)',
+              }}>
+                <Activity size={19} color="#fff" />
               </div>
               <div>
-                <div className="font-bold text-slate-100 text-sm leading-tight">FitTracker Pro</div>
-                {profile?.name
-                  ? <div className="text-xs text-slate-500">Hi, {profile.name}</div>
-                  : <div className="text-xs text-slate-600">{session.user.email}</div>
-                }
+                <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-.02em', color: 'var(--text)' }}>
+                  FitTracker Pro
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text3)' }}>
+                  {profile?.name ? `Hi, ${profile.name}` : session.user.email}
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               {/* Date picker */}
-              {(view === 'food' || view === 'workout' || view === 'dashboard' || view === 'glucose') && (
-                <div className="flex items-center gap-2">
+              {showDate && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6,
+                  background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: '4px 8px' }}>
                   <button onClick={() => setSelectedDate(d => adjustDate(d, -1))}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-700 transition-colors"
-                    style={{ background: '#1e293b' }}>
+                    style={{ width: 26, height: 26, borderRadius: 7, background: 'transparent', border: 'none',
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text2)' }}>
                     <ChevronLeft size={14} />
                   </button>
-                  <div className="text-xs font-medium text-slate-300 min-w-24 text-center">
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', minWidth: 90, textAlign: 'center' }}>
                     {isToday ? 'Today' : format(new Date(selectedDate), 'MMM dd, yyyy')}
-                  </div>
+                  </span>
                   <button onClick={() => !isToday && setSelectedDate(d => adjustDate(d, 1))}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
-                    style={{ background: '#1e293b', opacity: isToday ? 0.3 : 1 }}
-                    disabled={isToday}>
+                    disabled={isToday}
+                    style={{ width: 26, height: 26, borderRadius: 7, background: 'transparent', border: 'none',
+                      cursor: isToday ? 'default' : 'pointer', display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', color: isToday ? 'var(--text3)' : 'var(--text2)' }}>
                     <ChevronRight size={14} />
                   </button>
                   {!isToday && (
                     <button onClick={() => setSelectedDate(format(new Date(), 'yyyy-MM-dd'))}
-                      className="text-xs px-2 py-1 rounded-md"
-                      style={{ background: '#1e293b', color: '#94a3b8' }}>
+                      style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'var(--card-hi)',
+                        border: '1px solid var(--border-hi)', color: 'var(--text2)', cursor: 'pointer' }}>
                       Today
                     </button>
                   )}
@@ -163,11 +153,12 @@ export default function App() {
               )}
 
               {/* Logout */}
-              <button onClick={handleLogout}
-                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-700 transition-colors"
-                style={{ background: '#1e293b' }}
-                title="Sign out">
-                <LogOut size={14} className="text-slate-400" />
+              <button onClick={() => supabase.auth.signOut()}
+                title="Sign out"
+                style={{ width: 34, height: 34, borderRadius: 9, background: 'var(--card)',
+                  border: '1px solid var(--border)', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', cursor: 'pointer', color: 'var(--text2)' }}>
+                <LogOut size={14} />
               </button>
             </div>
           </div>
@@ -175,39 +166,51 @@ export default function App() {
       </header>
 
       {/* Profile nudge */}
-      {needsProfile && (
-        <div className="flex items-center justify-between px-4 py-2 text-xs" style={{ background: '#1e3a5f', borderBottom: '1px solid #1e4d80' }}>
-          <span className="text-blue-300">Complete your profile to enable calorie calculations and predictions.</span>
-          <button onClick={() => setView('profile')} className="text-blue-400 font-medium hover:underline">Set up now →</button>
+      {!profile && view !== 'profile' && (
+        <div style={{ background: 'rgba(79,142,245,.1)', borderBottom: '1px solid rgba(79,142,245,.2)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px', fontSize: 12 }}>
+          <span style={{ color: '#93bbf7' }}>Complete your profile to enable calorie calculations and predictions.</span>
+          <button onClick={() => setView('profile')}
+            style={{ color: 'var(--blue)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>
+            Set up now →
+          </button>
         </div>
       )}
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px' }}>
-        <div className="flex gap-5">
-          {/* Sidebar nav */}
-          <nav className="hidden lg:flex flex-col gap-1 w-44 shrink-0">
-            {NAV_ITEMS.map(item => (
-              <button key={item.view} onClick={() => setView(item.view)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left"
-                style={{
-                  background: view === item.view ? item.color + '22' : 'transparent',
-                  color:      view === item.view ? item.color : '#64748b',
-                  border:    `1px solid ${view === item.view ? item.color + '44' : 'transparent'}`,
-                }}>
-                {item.icon}{item.label}
-              </button>
-            ))}
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '20px', paddingBottom: 90 }}>
+        <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+
+          {/* ── Sidebar ─────────────────────────────────────────── */}
+          <nav style={{ width: 200, flexShrink: 0, position: 'sticky', top: 78, display: 'none' }}
+            className="lg:block">
+            <div className="card" style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {NAV.map(item => (
+                <button key={item.view} onClick={() => setView(item.view)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '9px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                    fontSize: 13, fontWeight: 600, width: '100%', textAlign: 'left',
+                    transition: 'all .15s',
+                    background: view === item.view ? item.gradient : 'transparent',
+                    color: view === item.view ? item.color : 'var(--text2)',
+                    boxShadow: view === item.view ? `0 0 0 1px ${item.color}30` : 'none',
+                  }}>
+                  <span style={{ color: view === item.view ? item.color : 'var(--text3)' }}>{item.icon}</span>
+                  {item.label}
+                </button>
+              ))}
+            </div>
           </nav>
 
-          {/* Main content */}
-          <main className="flex-1 min-w-0">
-            <div className="mb-5">
-              <h1 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+          {/* ── Main content ────────────────────────────────────── */}
+          <main style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ marginBottom: 20 }}>
+              <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text)' }}>
                 <span style={{ color: activeNav.color }}>{activeNav.icon}</span>
                 {activeNav.label}
               </h1>
-              {(view === 'food' || view === 'workout' || view === 'glucose') && (
-                <p className="text-xs text-slate-500 mt-0.5">
+              {showDate && view !== 'dashboard' && (
+                <p style={{ fontSize: 12, color: 'var(--text3)', marginTop: 3 }}>
                   {format(new Date(selectedDate), 'EEEE, MMMM do, yyyy')}
                 </p>
               )}
@@ -224,17 +227,44 @@ export default function App() {
         </div>
       </div>
 
-      {/* Mobile bottom nav */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 flex" style={{ background: '#0f172a', borderTop: '1px solid #1e293b' }}>
-        {NAV_ITEMS.map(item => (
+      {/* ── Mobile bottom nav ────────────────────────────────────── */}
+      <nav style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        background: 'rgba(11,17,32,0.92)', backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid var(--border)',
+        display: 'flex', paddingBottom: 'env(safe-area-inset-bottom)',
+        zIndex: 50,
+      }} className="lg:hidden">
+        {NAV.map(item => (
           <button key={item.view} onClick={() => setView(item.view)}
-            className="flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-all"
-            style={{ color: view === item.view ? item.color : '#475569' }}>
-            {item.icon}
-            <span className="text-[10px]">{item.label}</span>
+            style={{
+              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+              gap: 3, padding: '10px 4px', border: 'none', cursor: 'pointer',
+              background: 'transparent', transition: 'all .15s',
+              color: view === item.view ? item.color : 'var(--text3)',
+            }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 9,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: view === item.view ? item.gradient : 'transparent',
+              transition: 'all .15s',
+            }}>
+              {item.icon}
+            </div>
+            <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '.02em' }}>{item.label}</span>
           </button>
         ))}
       </nav>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .lg\\:block { display: block; }
+        .lg\\:hidden { display: flex; }
+        @media (min-width: 1024px) {
+          .lg\\:block { display: block !important; }
+          .lg\\:hidden { display: none !important; }
+        }
+      `}</style>
     </div>
   );
 }

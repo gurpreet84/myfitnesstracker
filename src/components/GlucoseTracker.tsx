@@ -134,7 +134,7 @@ export default function GlucoseTracker({ entries, onUpdate, selectedDate }: Prop
             color: hba1c == null ? '#64748b' : hba1c < 5.7 ? '#22c55e' : hba1c < 6.5 ? '#f59e0b' : '#ef4444',
           },
         ].map(s => (
-          <div key={s.label} className="rounded-xl p-4" style={{ background: '#1e293b', borderLeft: `3px solid ${s.color}` }}>
+          <div key={s.label} className="rounded-xl p-4" style={{ background: 'var(--card)', borderLeft: `3px solid ${s.color}` }}>
             <div className="text-xs text-slate-400 mb-1">{s.label}</div>
             <div className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</div>
             <div className="text-xs text-slate-500">{s.unit}</div>
@@ -153,7 +153,7 @@ export default function GlucoseTracker({ entries, onUpdate, selectedDate }: Prop
 
       {/* Log form */}
       {showForm && (
-        <div className="rounded-xl p-5 space-y-4" style={{ background: '#1e293b' }}>
+        <div className="rounded-xl p-5 space-y-4" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
           <h3 className="font-semibold text-slate-200 flex items-center gap-2">
             <Droplets size={18} className="text-blue-400" /> Add Glucose Reading
           </h3>
@@ -164,7 +164,7 @@ export default function GlucoseTracker({ entries, onUpdate, selectedDate }: Prop
                 <input
                   required type="number" min="20" max="600"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={value}
                   onChange={e => setValue(e.target.value)}
                   placeholder="e.g. 95"
@@ -176,7 +176,7 @@ export default function GlucoseTracker({ entries, onUpdate, selectedDate }: Prop
                 <input
                   type="time"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={time}
                   onChange={e => setTime(e.target.value)}
                 />
@@ -207,7 +207,7 @@ export default function GlucoseTracker({ entries, onUpdate, selectedDate }: Prop
               <label className="text-xs text-slate-400 mb-1 block">Notes (optional)</label>
               <input
                 className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                style={{ background: '#0f172a', border: '1px solid #334155' }}
+                style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 placeholder="e.g. after lunch, felt dizzy"
@@ -218,7 +218,7 @@ export default function GlucoseTracker({ entries, onUpdate, selectedDate }: Prop
               <button type="submit" className="px-5 py-2 rounded-lg text-sm font-medium" style={{ background: '#2563eb', color: '#fff' }}>
                 Save Reading
               </button>
-              <button type="button" className="px-5 py-2 rounded-lg text-sm font-medium" style={{ background: '#334155', color: '#cbd5e1' }}
+              <button type="button" className="px-5 py-2 rounded-lg text-sm font-medium" style={{ background: 'var(--card-hi)', color: 'var(--text2)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                 onClick={() => { setShowForm(false); setValue(''); }}>
                 Cancel
               </button>
@@ -229,19 +229,19 @@ export default function GlucoseTracker({ entries, onUpdate, selectedDate }: Prop
 
       {/* 60-reading chart */}
       {chartData.length > 0 && (
-        <div className="rounded-xl p-4" style={{ background: '#1e293b' }}>
+        <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
           <h3 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
             <Droplets size={16} className="text-blue-400" /> Glucose History
           </h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.04)" />
               <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false}
                 interval={Math.max(0, Math.floor(chartData.length / 6) - 1)} />
               <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} domain={['auto', 'auto']} />
               <Tooltip
-                contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }}
-                labelStyle={{ color: '#94a3b8' }}
+                contentStyle={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10, fontSize: 12 }}
+                labelStyle={{ color: 'var(--text2)' }}
                 formatter={(v: any, _: any, p: any) => [`${v} mg/dL — ${CONTEXT_LABELS[p.payload.context as GlucoseEntry['context']]}`, 'Glucose']}
               />
               <ReferenceLine y={70}  stroke="#ef4444" strokeDasharray="4 4" label={{ value: '70', fill: '#ef4444', fontSize: 10 }} />
@@ -264,7 +264,7 @@ export default function GlucoseTracker({ entries, onUpdate, selectedDate }: Prop
 
       {/* Today's readings list */}
       {todayEntries.length > 0 && (
-        <div className="rounded-xl overflow-hidden" style={{ background: '#1e293b' }}>
+        <div className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
           <div className="px-4 py-3" style={{ borderLeft: '3px solid #3b82f6' }}>
             <h4 className="font-semibold text-sm text-blue-400">Today's Readings</h4>
           </div>
@@ -283,7 +283,7 @@ export default function GlucoseTracker({ entries, onUpdate, selectedDate }: Prop
                     <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: status.color + '22', color: status.color }}>
                       {status.label}
                     </span>
-                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: '#334155', color: '#94a3b8' }}>
+                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--card-hi)', color: 'var(--text2)' }}>
                       {CONTEXT_LABELS[entry.context]}
                     </span>
                   </div>

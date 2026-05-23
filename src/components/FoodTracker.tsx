@@ -255,7 +255,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
           { label: 'Protein', value: totalProtein.toFixed(1), unit: 'g', color: '#22c55e' },
           { label: 'Fat', value: totalFat.toFixed(1), unit: 'g', color: '#f97316' },
         ].map(m => (
-          <div key={m.label} className="rounded-xl p-4" style={{ background: '#1e293b', borderLeft: `3px solid ${m.color}` }}>
+          <div key={m.label} className="rounded-xl p-4" style={{ background: 'var(--card)', borderLeft: `3px solid ${m.color}` }}>
             <div className="text-xs text-slate-400 mb-1">{m.label}</div>
             <div className="text-xl font-bold" style={{ color: m.color }}>{m.value}</div>
             <div className="text-xs text-slate-500">{m.unit}</div>
@@ -274,7 +274,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
 
       {/* Add form */}
       {showForm && (
-        <div className="rounded-xl p-5 space-y-4" style={{ background: '#1e293b' }}>
+        <div className="rounded-xl p-5 space-y-4" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
           <h3 className="font-semibold text-slate-200 flex items-center gap-2">
             <Apple size={18} className="text-green-400" /> Add Food Entry
           </h3>
@@ -282,7 +282,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
           {/* Search / quick fill */}
           <div className="relative">
             <div className="flex gap-2">
-              <div className="flex-1 flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: '#0f172a' }}>
+              <div className="flex-1 flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: 'var(--bg)' }}>
                 <Search size={14} className="text-slate-400 shrink-0" />
                 <input
                   className="flex-1 bg-transparent text-sm text-slate-200 outline-none placeholder-slate-500"
@@ -311,7 +311,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
               <p className="text-xs text-red-400 mt-1 px-1">{aiError}</p>
             )}
             {showSuggestions && search && filtered.length > 0 && (
-              <div className="absolute z-10 mt-1 w-full rounded-lg overflow-hidden shadow-xl" style={{ background: '#0f172a', border: '1px solid #334155' }}>
+              <div className="absolute z-10 mt-1 w-full rounded-lg overflow-hidden shadow-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}>
                 {filtered.slice(0, 6).map(f => (
                   <button
                     key={f.name}
@@ -331,7 +331,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
               </div>
             )}
             {showSuggestions && search && filtered.length === 0 && !aiLoading && (
-              <div className="mt-1 px-3 py-2 rounded-lg text-xs text-slate-400" style={{ background: '#0f172a', border: '1px solid #334155' }}>
+              <div className="mt-1 px-3 py-2 rounded-lg text-xs text-slate-400" style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}>
                 "<span className="text-slate-200">{search}</span>" not found in database —
                 click <span className="text-purple-400 font-medium">Ask AI</span> to auto-fill nutritional values
               </div>
@@ -345,7 +345,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
                 <input
                   required
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   placeholder="e.g. Oatmeal"
@@ -355,7 +355,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
                 <label className="text-xs text-slate-400 mb-1 block">Serving Size</label>
                 <input
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.servingSize}
                   onChange={e => setForm(f => ({ ...f, servingSize: e.target.value }))}
                   placeholder="e.g. 1 cup"
@@ -371,7 +371,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
                   type="number"
                   min="0"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.calories}
                   onChange={e => setForm(f => ({ ...f, calories: e.target.value }))}
                 />
@@ -383,7 +383,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
                   min="0"
                   max="100"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.glycemicIndex}
                   onChange={e => setForm(f => ({ ...f, glycemicIndex: e.target.value }))}
                   placeholder="0-100"
@@ -395,7 +395,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
                   type="number"
                   min="0"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.glycemicLoad}
                   onChange={e => setForm(f => ({ ...f, glycemicLoad: e.target.value }))}
                 />
@@ -411,7 +411,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
                     min="0"
                     step="0.1"
                     className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                    style={{ background: '#0f172a', border: '1px solid #334155' }}
+                    style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                     value={form[macro]}
                     onChange={e => setForm(f => ({ ...f, [macro]: e.target.value }))}
                   />
@@ -424,7 +424,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
                 <label className="text-xs text-slate-400 mb-1 block">Meal Type</label>
                 <select
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.mealType}
                   onChange={e => setForm(f => ({ ...f, mealType: e.target.value as FoodEntry['mealType'] }))}
                 >
@@ -438,7 +438,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
                 <input
                   type="time"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.time}
                   onChange={e => setForm(f => ({ ...f, time: e.target.value }))}
                 />
@@ -456,7 +456,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
               <button
                 type="button"
                 className="px-5 py-2 rounded-lg text-sm font-medium"
-                style={{ background: '#334155', color: '#cbd5e1' }}
+                style={{ background: 'var(--card-hi)', color: 'var(--text2)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                 onClick={() => { setShowForm(false); setSearch(''); setForm(emptyForm); }}
               >
                 Cancel
@@ -468,7 +468,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
 
       {/* Meal groups */}
       {mealGroups.map(({ meal, items }) => items.length > 0 && (
-        <div key={meal} className="rounded-xl overflow-hidden" style={{ background: '#1e293b' }}>
+        <div key={meal} className="rounded-xl overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
           <div className="px-4 py-3 flex items-center justify-between" style={{ borderLeft: `3px solid ${MEAL_COLORS[meal]}` }}>
             <h4 className="font-semibold text-sm capitalize" style={{ color: MEAL_COLORS[meal] }}>{meal}</h4>
             <span className="text-xs text-slate-400">{items.reduce((s, e) => s + e.calories, 0)} kcal</span>

@@ -17,9 +17,9 @@ interface Props {
 type Period = 'weekly' | 'monthly' | 'yearly';
 
 const TOOLTIP_STYLE = {
-  contentStyle: { background: '#0f172a', border: '1px solid #334155', borderRadius: 8, fontSize: 12 },
-  labelStyle: { color: '#94a3b8' },
-  itemStyle: { color: '#e2e8f0' },
+  contentStyle: { background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 8, fontSize: 12 },
+  labelStyle: { color: 'var(--text2)' },
+  itemStyle: { color: 'var(--text)' },
 };
 
 export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntries, profile }: Props) {
@@ -94,7 +94,7 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
             good: weightChange !== null && weightChange < 0,
           },
         ].map(c => (
-          <div key={c.label} className="rounded-xl p-4" style={{ background: '#1e293b' }}>
+          <div key={c.label} className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
             <div className="text-xs text-slate-400 mb-2">{c.label}</div>
             <div className="text-2xl font-bold" style={{ color: c.color }}>{c.value}</div>
             <div className="text-xs text-slate-500">{c.unit}</div>
@@ -108,7 +108,7 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
       </div>
 
       {/* Period selector */}
-      <div className="flex items-center gap-1 p-1 rounded-lg w-fit" style={{ background: '#1e293b' }}>
+      <div className="flex items-center gap-1 p-1 rounded-lg w-fit" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
         {(['weekly', 'monthly', 'yearly'] as Period[]).map(p => (
           <button
             key={p}
@@ -125,7 +125,7 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
       </div>
 
       {/* Calorie deficit trend */}
-      <div className="rounded-xl p-5" style={{ background: '#1e293b' }}>
+      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
         <h3 className="text-sm font-semibold text-slate-300 mb-1">Calorie Deficit Trend</h3>
         <p className="text-xs text-slate-500 mb-4">Positive = deficit (burning more than consuming). Target: {profile?.dailyCalorieDeficitGoal || 500} kcal</p>
         <ResponsiveContainer width="100%" height={220}>
@@ -136,7 +136,7 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
                 <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.04)" />
             <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
             <Tooltip {...TOOLTIP_STYLE} />
@@ -148,15 +148,15 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
       </div>
 
       {/* Calories in vs burned */}
-      <div className="rounded-xl p-5" style={{ background: '#1e293b' }}>
+      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
         <h3 className="text-sm font-semibold text-slate-300 mb-4">Calories Consumed vs. Burned</h3>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }} barGap={2}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.04)" />
             <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
             <Tooltip {...TOOLTIP_STYLE} />
-            <Legend wrapperStyle={{ fontSize: 12, color: '#94a3b8' }} />
+            <Legend wrapperStyle={{ fontSize: 12, color: 'var(--text2)' }} />
             <Bar dataKey="calories" fill="#f59e0b" radius={[3, 3, 0, 0]} name="Avg Consumed" />
             <Bar dataKey="burned" fill="#ef4444" radius={[3, 3, 0, 0]} name="Avg Burned" />
           </BarChart>
@@ -164,11 +164,11 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
       </div>
 
       {/* Workout minutes trend */}
-      <div className="rounded-xl p-5" style={{ background: '#1e293b' }}>
+      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
         <h3 className="text-sm font-semibold text-slate-300 mb-4">Workout Minutes Trend</h3>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.04)" />
             <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
             <Tooltip {...TOOLTIP_STYLE} />
@@ -179,12 +179,12 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
       </div>
 
       {/* Weight trend (line) */}
-      <div className="rounded-xl p-5" style={{ background: '#1e293b' }}>
+      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
         <h3 className="text-sm font-semibold text-slate-300 mb-4">Weight Trend</h3>
         {chartData.some(d => d.weight !== null) ? (
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={chartData.filter(d => d.weight !== null)} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.04)" />
               <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis domain={['auto', 'auto']} tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
               <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [`${v} kg`, 'Avg Weight']} />
@@ -200,12 +200,12 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
       </div>
 
       {/* Daily GI trend (last 30 days) */}
-      <div className="rounded-xl p-5" style={{ background: '#1e293b' }}>
+      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
         <h3 className="text-sm font-semibold text-slate-300 mb-1">Glycemic Index Trend (Last 30 Days)</h3>
         <p className="text-xs text-slate-500 mb-4">Average GI of all foods consumed per day</p>
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={dailyData.filter(d => d.gi > 0)} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.04)" />
             <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} interval={4} />
             <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
             <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [Number(v).toFixed(1), 'Avg GI']} />

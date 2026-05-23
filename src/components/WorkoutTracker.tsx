@@ -119,7 +119,7 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
           { label: 'Steps', value: totalSteps.toLocaleString(), unit: 'steps', icon: <Footprints size={16} />, color: '#22c55e' },
           { label: 'Distance', value: totalDist.toFixed(1), unit: 'km', icon: <Dumbbell size={16} />, color: '#f59e0b' },
         ].map(m => (
-          <div key={m.label} className="rounded-xl p-4" style={{ background: '#1e293b', borderLeft: `3px solid ${m.color}` }}>
+          <div key={m.label} className="rounded-xl p-4" style={{ background: 'var(--card)', borderLeft: `3px solid ${m.color}` }}>
             <div className="flex items-center gap-1 text-xs text-slate-400 mb-1">
               <span style={{ color: m.color }}>{m.icon}</span> {m.label}
             </div>
@@ -138,7 +138,7 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
       </button>
 
       {showForm && (
-        <div className="rounded-xl p-5 space-y-4" style={{ background: '#1e293b' }}>
+        <div className="rounded-xl p-5 space-y-4" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
           <h3 className="font-semibold text-slate-200 flex items-center gap-2">
             <Dumbbell size={18} className="text-purple-400" /> Add Workout
           </h3>
@@ -172,7 +172,7 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
                 <label className="text-xs text-slate-400 mb-1 block">Workout Name</label>
                 <input
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   placeholder="e.g. Morning Run"
@@ -183,7 +183,7 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
                 <input
                   type="time"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.time}
                   onChange={e => setForm(f => ({ ...f, time: e.target.value }))}
                 />
@@ -226,7 +226,7 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
                   type="number"
                   min="1"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.duration}
                   onChange={e => handleDurationChange(e.target.value)}
                 />
@@ -246,7 +246,7 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
                   type="number"
                   min="0"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.caloriesBurned}
                   onChange={e => setForm(f => ({ ...f, caloriesBurned: e.target.value, autoCalc: false }))}
                 />
@@ -258,7 +258,7 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
                   min="0"
                   step="0.1"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.distance}
                   onChange={e => setForm(f => ({ ...f, distance: e.target.value }))}
                 />
@@ -272,7 +272,7 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
                   type="number"
                   min="0"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.steps}
                   onChange={e => setForm(f => ({ ...f, steps: e.target.value }))}
                 />
@@ -281,7 +281,7 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
                 <label className="text-xs text-slate-400 mb-1 block">Notes</label>
                 <input
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.notes}
                   onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                   placeholder="How did it feel?"
@@ -293,7 +293,7 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
               <button type="submit" className="px-5 py-2 rounded-lg text-sm font-medium" style={{ background: '#7c3aed', color: '#fff' }}>
                 Save Workout
               </button>
-              <button type="button" className="px-5 py-2 rounded-lg text-sm font-medium" style={{ background: '#334155', color: '#cbd5e1' }}
+              <button type="button" className="px-5 py-2 rounded-lg text-sm font-medium" style={{ background: 'var(--card-hi)', color: 'var(--text2)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                 onClick={() => { setShowForm(false); setForm(emptyForm); }}>
                 Cancel
               </button>
@@ -305,7 +305,7 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
       {/* Workout list */}
       <div className="space-y-3">
         {dayEntries.map(entry => (
-          <div key={entry.id} className="rounded-xl p-4 flex items-center gap-4" style={{ background: '#1e293b' }}>
+          <div key={entry.id} className="rounded-xl p-4 flex items-center gap-4" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
             <div className="text-3xl">{WORKOUT_ICONS[entry.type]}</div>
             <div className="flex-1">
               <div className="flex items-center gap-2">

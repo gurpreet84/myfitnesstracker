@@ -51,7 +51,7 @@ export default function ProfileSetup({ profile, onSave }: Props) {
 
   return (
     <div className="max-w-2xl mx-auto space-y-5">
-      <div className="rounded-xl p-5" style={{ background: '#1e293b' }}>
+      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
         <h3 className="font-semibold text-slate-200 mb-5 flex items-center gap-2">
           <User size={18} className="text-blue-400" /> Your Profile & Goals
         </h3>
@@ -65,7 +65,7 @@ export default function ProfileSetup({ profile, onSave }: Props) {
                 <label className="text-xs text-slate-400 mb-1 block">Your Name</label>
                 <input
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.name}
                   onChange={e => set('name', e.target.value)}
                   placeholder="Enter your name"
@@ -75,7 +75,7 @@ export default function ProfileSetup({ profile, onSave }: Props) {
                 <label className="text-xs text-slate-400 mb-1 block">Age</label>
                 <input type="number" min="10" max="120"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.age}
                   onChange={e => set('age', Number(e.target.value))}
                 />
@@ -84,7 +84,7 @@ export default function ProfileSetup({ profile, onSave }: Props) {
                 <label className="text-xs text-slate-400 mb-1 block">Gender</label>
                 <select
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.gender}
                   onChange={e => set('gender', e.target.value as UserProfile['gender'])}
                 >
@@ -97,7 +97,7 @@ export default function ProfileSetup({ profile, onSave }: Props) {
                 <label className="text-xs text-slate-400 mb-1 block">Height (cm)</label>
                 <input type="number" min="100" max="250"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.height}
                   onChange={e => set('height', Number(e.target.value))}
                 />
@@ -106,7 +106,7 @@ export default function ProfileSetup({ profile, onSave }: Props) {
                 <label className="text-xs text-slate-400 mb-1 block">Current Weight (kg)</label>
                 <input type="number" min="30" max="300" step="0.1"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.currentWeight}
                   onChange={e => set('currentWeight', Number(e.target.value))}
                 />
@@ -122,7 +122,7 @@ export default function ProfileSetup({ profile, onSave }: Props) {
                 <label className="text-xs text-slate-400 mb-1 block">Target Weight (kg)</label>
                 <input type="number" min="30" max="300" step="0.1"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.targetWeight}
                   onChange={e => set('targetWeight', Number(e.target.value))}
                 />
@@ -131,7 +131,7 @@ export default function ProfileSetup({ profile, onSave }: Props) {
                 <label className="text-xs text-slate-400 mb-1 block">Daily Calorie Deficit Goal (kcal)</label>
                 <input type="number" min="100" max="1500" step="50"
                   className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: '#0f172a', border: '1px solid #334155' }}
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
                   value={form.dailyCalorieDeficitGoal}
                   onChange={e => set('dailyCalorieDeficitGoal', Number(e.target.value))}
                 />
@@ -162,7 +162,7 @@ export default function ProfileSetup({ profile, onSave }: Props) {
           </div>
 
           {/* Calculated values preview */}
-          <div className="rounded-xl p-4 space-y-3" style={{ background: '#0f172a' }}>
+          <div className="rounded-xl p-4 space-y-3" style={{ background: 'var(--bg)' }}>
             <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Calculated Values</h4>
             <div className="grid grid-cols-3 gap-3">
               {[

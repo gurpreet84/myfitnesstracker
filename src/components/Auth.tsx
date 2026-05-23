@@ -1,107 +1,139 @@
 import { useState } from 'react';
-import { Activity, Mail, Lock, Loader2 } from 'lucide-react';
+import { Activity, Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 
 export default function Auth() {
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
-  const [email, setEmail] = useState('');
+  const [mode, setMode]       = useState<'login' | 'signup'>('login');
+  const [email, setEmail]     = useState('');
   const [password, setPassword] = useState('');
+  const [showPw, setShowPw]   = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError]     = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-    setMessage('');
-
+    setLoading(true); setError(''); setMessage('');
     if (mode === 'login') {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setError(error.message);
     } else {
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) setError(error.message);
-      else setMessage('Account created! Check your email to confirm, then log in.');
+      else setMessage('Account created! Check your email to confirm, then sign in.');
     }
     setLoading(false);
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0f172a' }}>
-      <div className="w-full max-w-sm">
+    <div style={{
+      minHeight: '100vh', background: 'var(--bg)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 20,
+    }}>
+      {/* Background glow */}
+      <div style={{
+        position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)',
+        width: 600, height: 600, borderRadius: '50%', pointerEvents: 'none',
+        background: 'radial-gradient(circle, rgba(99,102,241,.07) 0%, transparent 70%)',
+      }} />
+
+      <div style={{ width: '100%', maxWidth: 400, position: 'relative' }}>
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: '#2563eb' }}>
-            <Activity size={32} color="#fff" />
+        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: 18,
+            background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 16px',
+            boxShadow: '0 0 40px rgba(99,102,241,.4)',
+          }}>
+            <Activity size={30} color="#fff" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-100">FitTracker Pro</h1>
-          <p className="text-sm text-slate-400 mt-1">Your personal fitness companion</p>
+          <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, letterSpacing: '-.03em', color: 'var(--text)' }}>
+            FitTracker Pro
+          </h1>
+          <p style={{ fontSize: 14, color: 'var(--text2)', marginTop: 6 }}>
+            Your personal health companion
+          </p>
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl p-6" style={{ background: '#1e293b' }}>
-          <h2 className="text-lg font-semibold text-slate-200 mb-5">
-            {mode === 'login' ? 'Sign in to your account' : 'Create an account'}
+        <div className="card" style={{ padding: 28 }}>
+          <h2 style={{ fontSize: 17, fontWeight: 700, margin: '0 0 22px', color: 'var(--text)' }}>
+            {mode === 'login' ? 'Welcome back' : 'Create your account'}
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
-              <label className="text-xs text-slate-400 mb-1 block">Email</label>
-              <div className="flex items-center gap-2 rounded-lg px-3 py-2.5" style={{ background: '#0f172a', border: '1px solid #334155' }}>
-                <Mail size={14} className="text-slate-500 shrink-0" />
+              <label style={{ fontSize: 12, color: 'var(--text2)', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                Email address
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Mail size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }} />
                 <input
-                  type="email"
-                  required
-                  className="flex-1 bg-transparent text-sm text-slate-200 outline-none placeholder-slate-600"
-                  placeholder="you@example.com"
-                  value={email}
+                  type="email" required className="inp" style={{ paddingLeft: 36 }}
+                  placeholder="you@example.com" value={email}
                   onChange={e => setEmail(e.target.value)}
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs text-slate-400 mb-1 block">Password</label>
-              <div className="flex items-center gap-2 rounded-lg px-3 py-2.5" style={{ background: '#0f172a', border: '1px solid #334155' }}>
-                <Lock size={14} className="text-slate-500 shrink-0" />
+              <label style={{ fontSize: 12, color: 'var(--text2)', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                Password
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }} />
                 <input
-                  type="password"
-                  required
-                  minLength={6}
-                  className="flex-1 bg-transparent text-sm text-slate-200 outline-none placeholder-slate-600"
-                  placeholder="Min. 6 characters"
-                  value={password}
+                  type={showPw ? 'text' : 'password'} required minLength={6} className="inp"
+                  style={{ paddingLeft: 36, paddingRight: 40 }}
+                  placeholder="Min. 6 characters" value={password}
                   onChange={e => setPassword(e.target.value)}
                 />
+                <button type="button" onClick={() => setShowPw(s => !s)}
+                  style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text3)' }}>
+                  {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
               </div>
             </div>
 
-            {error && <p className="text-xs text-red-400 bg-red-950 px-3 py-2 rounded-lg">{error}</p>}
-            {message && <p className="text-xs text-green-400 bg-green-950 px-3 py-2 rounded-lg">{message}</p>}
+            {error && (
+              <div style={{ background: 'rgba(240,96,96,.1)', border: '1px solid rgba(240,96,96,.2)',
+                borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#f87171' }}>
+                {error}
+              </div>
+            )}
+            {message && (
+              <div style={{ background: 'rgba(45,212,160,.1)', border: '1px solid rgba(45,212,160,.2)',
+                borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#2dd4a0' }}>
+                {message}
+              </div>
+            )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2.5 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-60"
-              style={{ background: '#2563eb', color: '#fff' }}
-            >
-              {loading && <Loader2 size={14} className="animate-spin" />}
+            <button type="submit" disabled={loading} className="btn btn-primary"
+              style={{ width: '100%', justifyContent: 'center', marginTop: 4, padding: '12px' }}>
+              {loading && <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />}
               {mode === 'login' ? 'Sign In' : 'Create Account'}
             </button>
           </form>
 
-          <p className="text-xs text-center text-slate-500 mt-4">
+          <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text3)', marginTop: 18, marginBottom: 0 }}>
             {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-            <button
-              className="text-blue-400 hover:underline"
-              onClick={() => { setMode(m => m === 'login' ? 'signup' : 'login'); setError(''); setMessage(''); }}
-            >
-              {mode === 'login' ? 'Sign up' : 'Sign in'}
+            <button onClick={() => { setMode(m => m === 'login' ? 'signup' : 'login'); setError(''); setMessage(''); }}
+              style={{ color: 'var(--blue)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>
+              {mode === 'login' ? 'Sign up free' : 'Sign in'}
             </button>
           </p>
         </div>
+
+        <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text3)', marginTop: 16 }}>
+          Your data is encrypted and stored securely.
+        </p>
       </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

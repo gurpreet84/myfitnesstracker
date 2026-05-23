@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { Flame, Apple, Dumbbell, TrendingDown, Scale, Target, Activity, Droplets } from 'lucide-react';
 import {
@@ -8,7 +9,6 @@ import type { FoodEntry, WorkoutEntry, WeightEntry, UserProfile, GlucoseEntry } 
 import { getDailySummary, calculateTDEE, calculateBMI, getGlycemicCategory, getLast7Days } from '../utils/calculations';
 import { saveWeightEntry, generateId } from '../utils/storage';
 import { getGlucoseStatus, estimateHbA1c } from './GlucoseTracker';
-import { useState } from 'react';
 
 interface Props {
   foodEntries: FoodEntry[];
@@ -20,40 +20,45 @@ interface Props {
   onUpdate: () => void;
 }
 
-const MACRO_COLORS = ['#3b82f6', '#22c55e', '#f97316'];
+const TT = {
+  contentStyle: { background: '#0e1628', border: '1px solid rgba(148,163,184,.12)', borderRadius: 10, fontSize: 12 },
+  labelStyle: { color: '#7e95b3' },
+  itemStyle: { color: '#dde4f0' },
+};
 
 export default function Dashboard({ foodEntries, workoutEntries, weightEntries, glucoseEntries, profile, selectedDate, onUpdate }: Props) {
   const [weightInput, setWeightInput] = useState('');
 
-  const today = getDailySummary(selectedDate, foodEntries, workoutEntries, weightEntries, profile);
-  const tdee = profile ? calculateTDEE(profile) : 2000;
+  const today       = getDailySummary(selectedDate, foodEntries, workoutEntries, weightEntries, profile);
+  const tdee        = profile ? calculateTDEE(profile) : 2000;
   const calorieGoal = profile?.dailyCalorieGoal || tdee;
-  const deficit = tdee - today.netCalories;
+  const deficit     = tdee - today.netCalories;
   const deficitGoal = profile?.dailyCalorieDeficitGoal || 500;
+  const calPct      = Math.min(100, Math.round((today.totalCaloriesConsumed / calorieGoal) * 100));
+  const deficitPct  = Math.min(100, Math.round((deficit / deficitGoal) * 100));
+  const bmi         = profile ? calculateBMI(profile.currentWeight, profile.height) : null;
+  const latestWeight = [...weightEntries].sort((a, b) => b.date.localeCompare(a.date))[0];
+  const giCat       = getGlycemicCategory(today.avgGlycemicIndex);
 
-  // last 7 days sparkline
+  // 7-day chart
   const last7 = getLast7Days().map(date => {
     const s = getDailySummary(date, foodEntries, workoutEntries, weightEntries, profile);
-    return {
-      date: format(new Date(date), 'EEE'),
-      calories: s.totalCaloriesConsumed,
-      burned: s.totalCaloriesBurned,
-      deficit: Math.max(0, s.calorieDeficit),
-    };
+    return { date: format(new Date(date), 'EEE'), calories: s.totalCaloriesConsumed, burned: s.totalCaloriesBurned };
   });
 
-  // Macro pie data
   const macroData = [
-    { name: 'Carbs', value: today.totalCarbs * 4 },
+    { name: 'Carbs',   value: today.totalCarbs * 4 },
     { name: 'Protein', value: today.totalProtein * 4 },
-    { name: 'Fat', value: today.totalFat * 9 },
+    { name: 'Fat',     value: today.totalFat * 9 },
   ].filter(d => d.value > 0);
 
-  const calPct = Math.min(100, Math.round((today.totalCaloriesConsumed / calorieGoal) * 100));
-  const deficitPct = Math.min(100, Math.round((deficit / deficitGoal) * 100));
-
-  const bmi = profile ? calculateBMI(profile.currentWeight, profile.height) : null;
-  const latestWeight = weightEntries.sort((a, b) => b.date.localeCompare(a.date))[0];
+  // Glucose
+  const hba1c = estimateHbA1c(glucoseEntries);
+  const recentGlucose = [...glucoseEntries]
+    .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`))
+    .slice(-20)
+    .map(e => ({ label: `${format(new Date(e.date), 'MMM d')} ${e.time}`, value: e.value, color: getGlucoseStatus(e.value, e.context).color }));
+  const latestGlucose = recentGlucose[recentGlucose.length - 1];
 
   function logWeight(e: React.FormEvent) {
     e.preventDefault();
@@ -63,322 +68,283 @@ export default function Dashboard({ foodEntries, workoutEntries, weightEntries, 
     onUpdate();
   }
 
-  const giCat = getGlycemicCategory(today.avgGlycemicIndex);
+  const MACRO_COLORS = ['#4f8ef5', '#2dd4a0', '#f0ac3c'];
 
-  // Glucose
-  const hba1c = estimateHbA1c(glucoseEntries);
-  const recentGlucose = [...glucoseEntries]
-    .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`))
-    .slice(-20)
-    .map(e => ({
-      label: `${format(new Date(e.date), 'MMM dd')} ${e.time}`,
-      value: e.value,
-      color: getGlucoseStatus(e.value, e.context).color,
-    }));
-  const latestGlucose = recentGlucose[recentGlucose.length - 1];
+  const kpis = [
+    { label: 'Calories In',    value: today.totalCaloriesConsumed, unit: 'kcal',
+      sub: `Goal: ${calorieGoal}`, icon: <Apple size={16} />, color: '#f0ac3c',
+      pct: calPct, glow: 'kpi-amber',
+      grad: 'linear-gradient(135deg, rgba(240,172,60,.12), rgba(240,172,60,.04))' },
+    { label: 'Calories Burned', value: today.totalCaloriesBurned, unit: 'kcal',
+      sub: 'Exercise', icon: <Flame size={16} />, color: '#f06060',
+      pct: null, glow: 'kpi-red',
+      grad: 'linear-gradient(135deg, rgba(240,96,96,.12), rgba(240,96,96,.04))' },
+    { label: 'Calorie Deficit', value: deficit, unit: 'kcal',
+      sub: `Goal: ${deficitGoal}`, icon: <TrendingDown size={16} />,
+      color: deficit >= deficitGoal ? '#2dd4a0' : deficit > 0 ? '#f0ac3c' : '#f06060',
+      pct: deficitPct, glow: deficit >= deficitGoal ? 'kpi-green' : 'kpi-amber',
+      grad: `linear-gradient(135deg, ${deficit >= deficitGoal ? 'rgba(45,212,160,.12)' : 'rgba(240,172,60,.12)'}, transparent)` },
+    { label: 'Workout Time',   value: today.workoutMinutes, unit: 'min',
+      sub: today.steps ? `${today.steps.toLocaleString()} steps` : 'No steps',
+      icon: <Dumbbell size={16} />, color: '#a855f7',
+      pct: null, glow: 'kpi-purple',
+      grad: 'linear-gradient(135deg, rgba(168,85,247,.12), rgba(168,85,247,.04))' },
+  ];
 
   return (
-    <div className="space-y-5">
-      {/* Top KPI row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
-          {
-            label: 'Calories In',
-            value: today.totalCaloriesConsumed,
-            unit: 'kcal',
-            sub: `Goal: ${calorieGoal}`,
-            icon: <Apple size={18} />,
-            color: '#f59e0b',
-            pct: calPct,
-          },
-          {
-            label: 'Calories Burned',
-            value: today.totalCaloriesBurned,
-            unit: 'kcal',
-            sub: `Exercise only`,
-            icon: <Flame size={18} />,
-            color: '#ef4444',
-            pct: null,
-          },
-          {
-            label: 'Calorie Deficit',
-            value: deficit,
-            unit: 'kcal',
-            sub: `Goal: ${deficitGoal} kcal`,
-            icon: <TrendingDown size={18} />,
-            color: deficit >= deficitGoal ? '#22c55e' : deficit > 0 ? '#f59e0b' : '#ef4444',
-            pct: deficitPct,
-          },
-          {
-            label: 'Workout Time',
-            value: today.workoutMinutes,
-            unit: 'min',
-            sub: today.steps ? `${today.steps.toLocaleString()} steps` : 'No steps logged',
-            icon: <Dumbbell size={18} />,
-            color: '#8b5cf6',
-            pct: null,
-          },
-        ].map(kpi => (
-          <div key={kpi.label} className="rounded-xl p-4" style={{ background: '#1e293b' }}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-slate-400">{kpi.label}</span>
-              <span style={{ color: kpi.color }}>{kpi.icon}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+
+      {/* KPI row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}
+        className="lg-4-cols">
+        {kpis.map(k => (
+          <div key={k.label} className={`card ${k.glow}`}
+            style={{ padding: 18, background: k.grad }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text2)' }}>{k.label}</span>
+              <div style={{ width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: `${k.color}22`, color: k.color }}>{k.icon}</div>
             </div>
-            <div className="text-2xl font-bold mb-1" style={{ color: kpi.color }}>
-              {kpi.value.toLocaleString()}
+            <div style={{ fontSize: 28, fontWeight: 800, color: k.color, letterSpacing: '-.02em', lineHeight: 1 }}>
+              {k.value.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-500 mb-2">{kpi.unit} • {kpi.sub}</div>
-            {kpi.pct !== null && (
-              <div className="rounded-full h-1.5 w-full" style={{ background: '#334155' }}>
-                <div
-                  className="h-1.5 rounded-full transition-all"
-                  style={{ width: `${kpi.pct}%`, background: kpi.color }}
-                />
+            <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>{k.unit} · {k.sub}</div>
+            {k.pct !== null && (
+              <div className="progress-track" style={{ marginTop: 12 }}>
+                <div className="progress-fill" style={{ width: `${k.pct}%`, background: k.color }} />
               </div>
             )}
           </div>
         ))}
       </div>
 
-      {/* Middle row: 7-day chart + macro pie + GI */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* 7-day calorie chart */}
-        <div className="lg:col-span-2 rounded-xl p-4" style={{ background: '#1e293b' }}>
-          <h3 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
-            <Activity size={16} className="text-blue-400" /> 7-Day Calorie Overview
-          </h3>
-          <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={last7} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+      {/* 7-day chart + macros */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }} className="lg-3-cols-2-1">
+        <div className="card" style={{ padding: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <Activity size={15} style={{ color: 'var(--blue)' }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>7-Day Calorie Overview</span>
+          </div>
+          <ResponsiveContainer width="100%" height={175}>
+            <AreaChart data={last7} margin={{ top: 5, right: 8, left: -22, bottom: 0 }}>
               <defs>
-                <linearGradient id="calGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                <linearGradient id="cg1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#f0ac3c" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#f0ac3c" stopOpacity={0} />
                 </linearGradient>
-                <linearGradient id="burnGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                <linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#f06060" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#f06060" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip
-                contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }}
-                labelStyle={{ color: '#94a3b8' }}
-              />
-              <Area type="monotone" dataKey="calories" stroke="#f59e0b" strokeWidth={2} fill="url(#calGrad)" name="Consumed" />
-              <Area type="monotone" dataKey="burned" stroke="#ef4444" strokeWidth={2} fill="url(#burnGrad)" name="Burned" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.04)" />
+              <XAxis dataKey="date" tick={{ fill: 'var(--text3)', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: 'var(--text3)', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <Tooltip {...TT} />
+              <Area type="monotone" dataKey="calories" stroke="#f0ac3c" strokeWidth={2} fill="url(#cg1)" name="Consumed" />
+              <Area type="monotone" dataKey="burned"   stroke="#f06060" strokeWidth={2} fill="url(#cg2)" name="Burned" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Macros + GI */}
-        <div className="space-y-3">
-          <div className="rounded-xl p-4" style={{ background: '#1e293b' }}>
-            <h3 className="text-sm font-semibold text-slate-300 mb-3">Today's Macros</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Macros */}
+          <div className="card" style={{ padding: 18 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 12 }}>Today's Macros</div>
             {macroData.length > 0 ? (
-              <div className="flex items-center gap-3">
-                <PieChart width={100} height={100}>
-                  <Pie data={macroData} cx={45} cy={45} innerRadius={30} outerRadius={48} dataKey="value" strokeWidth={0}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <PieChart width={90} height={90}>
+                  <Pie data={macroData} cx={42} cy={42} innerRadius={27} outerRadius={44} dataKey="value" strokeWidth={0}>
                     {macroData.map((_, i) => <Cell key={i} fill={MACRO_COLORS[i]} />)}
                   </Pie>
                 </PieChart>
-                <div className="space-y-1">
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {[
-                    { name: 'Carbs', val: today.totalCarbs, color: MACRO_COLORS[0] },
+                    { name: 'Carbs',   val: today.totalCarbs,   color: MACRO_COLORS[0] },
                     { name: 'Protein', val: today.totalProtein, color: MACRO_COLORS[1] },
-                    { name: 'Fat', val: today.totalFat, color: MACRO_COLORS[2] },
+                    { name: 'Fat',     val: today.totalFat,     color: MACRO_COLORS[2] },
                   ].map(m => (
-                    <div key={m.name} className="flex items-center gap-2 text-xs">
-                      <div className="w-2 h-2 rounded-full" style={{ background: m.color }} />
-                      <span className="text-slate-400 w-12">{m.name}</span>
-                      <span className="text-slate-200 font-medium">{m.val.toFixed(1)}g</span>
+                    <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: m.color, flexShrink: 0 }} />
+                      <span style={{ fontSize: 11, color: 'var(--text2)', width: 44 }}>{m.name}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: m.color }}>{m.val.toFixed(1)}g</span>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-slate-600 text-center py-4">Log food to see macros</p>
+              <p style={{ fontSize: 12, color: 'var(--text3)', textAlign: 'center', padding: '12px 0' }}>Log food to see macros</p>
             )}
           </div>
 
-          <div className="rounded-xl p-4" style={{ background: '#1e293b' }}>
-            <h3 className="text-sm font-semibold text-slate-300 mb-2">Avg Glycemic Index</h3>
+          {/* GI */}
+          <div className="card" style={{ padding: 18 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>Avg Glycemic Index</div>
             {today.avgGlycemicIndex > 0 ? (
               <>
-                <div className="text-3xl font-bold" style={{ color: giCat.color }}>{today.avgGlycemicIndex}</div>
-                <div className="text-xs mt-1" style={{ color: giCat.color }}>{giCat.label} GI</div>
-                <div className="mt-2 h-2 rounded-full" style={{ background: '#334155' }}>
-                  <div className="h-2 rounded-full" style={{ width: `${Math.min(100, today.avgGlycemicIndex)}%`, background: giCat.color }} />
+                <div style={{ fontSize: 36, fontWeight: 800, color: giCat.color, letterSpacing: '-.03em', lineHeight: 1 }}>
+                  {today.avgGlycemicIndex}
                 </div>
-                <div className="flex justify-between text-xs text-slate-600 mt-1">
+                <div style={{ fontSize: 11, color: giCat.color, marginTop: 3, fontWeight: 600 }}>{giCat.label}</div>
+                <div className="progress-track" style={{ marginTop: 10 }}>
+                  <div className="progress-fill" style={{ width: `${Math.min(100, today.avgGlycemicIndex)}%`, background: giCat.color }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text3)', marginTop: 4 }}>
                   <span>Low &lt;55</span><span>Med &lt;70</span><span>High</span>
                 </div>
               </>
             ) : (
-              <p className="text-xs text-slate-600 py-2">No GI data yet</p>
+              <p style={{ fontSize: 12, color: 'var(--text3)' }}>No GI data yet</p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Glucose widget */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Glucose chart */}
-        <div className="lg:col-span-2 rounded-xl p-4" style={{ background: '#1e293b' }}>
-          <h3 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
-            <Droplets size={16} className="text-blue-400" /> Blood Glucose (mg/dL)
-          </h3>
+      {/* Glucose section */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }} className="lg-3-cols-2-1">
+        <div className="card" style={{ padding: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <Droplets size={15} style={{ color: 'var(--cyan)' }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Blood Glucose (mg/dL)</span>
+          </div>
           {recentGlucose.length > 0 ? (
-            <>
-              <ResponsiveContainer width="100%" height={160}>
-                <LineChart data={recentGlucose} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                  <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false}
-                    interval={Math.max(0, Math.floor(recentGlucose.length / 5) - 1)} />
-                  <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} domain={['auto', 'auto']} />
-                  <Tooltip
-                    contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }}
-                    formatter={(v: any) => [`${v} mg/dL`, 'Glucose']}
-                  />
-                  <ReferenceLine y={70}  stroke="#ef444466" strokeDasharray="4 4" />
-                  <ReferenceLine y={140} stroke="#f59e0b66" strokeDasharray="4 4" />
-                  <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2}
-                    dot={(p: any) => <circle key={p.index} cx={p.cx} cy={p.cy} r={4} fill={p.payload.color} />}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-              <div className="flex gap-4 mt-1 text-xs text-slate-600">
-                <span style={{ borderBottom: '1px dashed #ef4444' }} className="pr-1">70 low</span>
-                <span style={{ borderBottom: '1px dashed #f59e0b' }} className="pr-1">140 elevated</span>
-              </div>
-            </>
+            <ResponsiveContainer width="100%" height={155}>
+              <LineChart data={recentGlucose} margin={{ top: 5, right: 8, left: -22, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.04)" />
+                <XAxis dataKey="label" tick={{ fill: 'var(--text3)', fontSize: 10 }} axisLine={false} tickLine={false}
+                  interval={Math.max(0, Math.floor(recentGlucose.length / 5) - 1)} />
+                <YAxis tick={{ fill: 'var(--text3)', fontSize: 10 }} axisLine={false} tickLine={false} domain={['auto', 'auto']} />
+                <Tooltip {...TT} formatter={(v: any) => [`${v} mg/dL`, 'Glucose']} />
+                <ReferenceLine y={70}  stroke="rgba(240,96,96,.4)"  strokeDasharray="4 4" />
+                <ReferenceLine y={140} stroke="rgba(240,172,60,.4)" strokeDasharray="4 4" />
+                <Line type="monotone" dataKey="value" stroke="var(--cyan)" strokeWidth={2}
+                  dot={(p: any) => <circle key={p.index} cx={p.cx} cy={p.cy} r={3.5} fill={p.payload.color} />} />
+              </LineChart>
+            </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-32 text-slate-600 text-sm">
-              No glucose readings yet — log from the Glucose tab
+            <div style={{ height: 155, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 13, color: 'var(--text3)' }}>
+              No glucose readings — log from the Glucose tab
             </div>
           )}
         </div>
 
-        {/* HbA1c + latest */}
-        <div className="space-y-3">
-          <div className="rounded-xl p-4" style={{ background: '#1e293b' }}>
-            <h3 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-              <Droplets size={14} className="text-blue-400" /> Estimated HbA1c
-            </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="card kpi-cyan" style={{ padding: 18, background: 'linear-gradient(135deg, rgba(34,212,232,.1), transparent)' }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text2)', marginBottom: 8 }}>Estimated HbA1c</div>
             {hba1c != null ? (
               <>
-                <div className="text-4xl font-bold" style={{
-                  color: hba1c < 5.7 ? '#22c55e' : hba1c < 6.5 ? '#f59e0b' : '#ef4444'
-                }}>{hba1c}%</div>
-                <div className="text-xs mt-1" style={{
-                  color: hba1c < 5.7 ? '#22c55e' : hba1c < 6.5 ? '#f59e0b' : '#ef4444'
-                }}>
-                  {hba1c < 5.7 ? 'Normal' : hba1c < 6.5 ? 'Prediabetes range' : 'Diabetes range'}
+                <div style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-.03em', lineHeight: 1,
+                  color: hba1c < 5.7 ? '#2dd4a0' : hba1c < 6.5 ? '#f0ac3c' : '#f06060' }}>
+                  {hba1c}%
                 </div>
-                <div className="mt-3 space-y-1">
-                  {[['< 5.7%', 'Normal', '#22c55e'], ['5.7–6.4%', 'Prediabetes', '#f59e0b'], ['≥ 6.5%', 'Diabetes', '#ef4444']]
-                    .map(([range, label, color]) => (
-                      <div key={label} className="flex justify-between text-xs">
-                        <span className="text-slate-500">{label}</span>
-                        <span style={{ color }}>{range}</span>
-                      </div>
-                    ))}
+                <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4,
+                  color: hba1c < 5.7 ? '#2dd4a0' : hba1c < 6.5 ? '#f0ac3c' : '#f06060' }}>
+                  {hba1c < 5.7 ? 'Normal range' : hba1c < 6.5 ? 'Prediabetes range' : 'Diabetes range'}
+                </div>
+                <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {[['<5.7%', 'Normal', '#2dd4a0'], ['5.7–6.4%', 'Prediabetes', '#f0ac3c'], ['≥6.5%', 'Diabetes', '#f06060']].map(([r, l, c]) => (
+                    <div key={l} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+                      <span style={{ color: 'var(--text3)' }}>{l}</span>
+                      <span style={{ color: c, fontWeight: 600 }}>{r}</span>
+                    </div>
+                  ))}
                 </div>
               </>
             ) : (
-              <p className="text-xs text-slate-600 py-2">Log glucose readings to see HbA1c estimate</p>
+              <p style={{ fontSize: 12, color: 'var(--text3)', paddingTop: 4 }}>Log glucose to see estimate</p>
             )}
           </div>
 
           {latestGlucose && (
-            <div className="rounded-xl p-4" style={{ background: '#1e293b' }}>
-              <div className="text-xs text-slate-400 mb-1">Latest Reading</div>
-              <div className="text-3xl font-bold" style={{ color: latestGlucose.color }}>{latestGlucose.value}</div>
-              <div className="text-xs text-slate-500">mg/dL • {latestGlucose.label}</div>
+            <div className="card" style={{ padding: 18 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text2)', marginBottom: 6 }}>Latest Glucose</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: latestGlucose.color, letterSpacing: '-.02em' }}>
+                {latestGlucose.value}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 3 }}>mg/dL · {latestGlucose.label}</div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Weight + Profile */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Weight log */}
-        <div className="rounded-xl p-4" style={{ background: '#1e293b' }}>
-          <h3 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-            <Scale size={16} className="text-cyan-400" /> Weight Log
-          </h3>
-          <form onSubmit={logWeight} className="flex gap-2 mb-3">
-            <input
-              type="number"
-              step="0.1"
-              min="30"
-              max="300"
-              className="flex-1 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-              style={{ background: '#0f172a', border: '1px solid #334155' }}
-              placeholder="Today's weight (kg)"
-              value={weightInput}
-              onChange={e => setWeightInput(e.target.value)}
-            />
-            <button type="submit" className="px-4 py-2 rounded-lg text-sm font-medium" style={{ background: '#0ea5e9', color: '#fff' }}>
+      {/* Weight + Goals */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1,1fr)', gap: 12 }} className="lg-2-cols">
+        <div className="card" style={{ padding: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <Scale size={15} style={{ color: 'var(--cyan)' }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Weight Log</span>
+          </div>
+          <form onSubmit={logWeight} style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <input type="number" step="0.1" min="30" max="300" className="inp"
+              placeholder="Today's weight (kg)" value={weightInput}
+              onChange={e => setWeightInput(e.target.value)} />
+            <button type="submit" className="btn btn-primary" style={{ padding: '10px 16px', flexShrink: 0, whiteSpace: 'nowrap' }}>
               Log
             </button>
           </form>
-          <div className="space-y-2 max-h-36 overflow-y-auto">
-            {weightEntries.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5).map(w => (
-              <div key={w.id} className="flex justify-between text-xs text-slate-400 px-2 py-1 rounded" style={{ background: '#0f172a' }}>
-                <span>{format(new Date(w.date), 'MMM dd, yyyy')}</span>
-                <span className="text-cyan-400 font-medium">{w.weight} kg</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 140, overflowY: 'auto' }}>
+            {[...weightEntries].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5).map(w => (
+              <div key={w.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '8px 12px', borderRadius: 10, background: 'var(--bg)' }}>
+                <span style={{ fontSize: 12, color: 'var(--text2)' }}>{format(new Date(w.date), 'MMM dd, yyyy')}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--cyan)' }}>{w.weight} kg</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Profile / Goals summary */}
-        <div className="rounded-xl p-4" style={{ background: '#1e293b' }}>
-          <h3 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-            <Target size={16} className="text-green-400" /> Profile & Goals
-          </h3>
+        <div className="card" style={{ padding: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <Target size={15} style={{ color: '#2dd4a0' }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Goals & Profile</span>
+          </div>
           {profile ? (
-            <div className="space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[
                 { label: 'Current Weight', value: `${latestWeight?.weight || profile.currentWeight} kg` },
-                { label: 'Target Weight', value: `${profile.targetWeight} kg` },
-                { label: 'To Lose', value: `${Math.max(0, (latestWeight?.weight || profile.currentWeight) - profile.targetWeight).toFixed(1)} kg` },
-                { label: 'BMI', value: bmi ? String(bmi) : '—' },
-                { label: 'TDEE', value: `${tdee} kcal/day` },
-                { label: 'Deficit Goal', value: `${deficitGoal} kcal/day` },
+                { label: 'Target Weight',  value: `${profile.targetWeight} kg` },
+                { label: 'To Lose',        value: `${Math.max(0, (latestWeight?.weight || profile.currentWeight) - profile.targetWeight).toFixed(1)} kg` },
+                { label: 'BMI',            value: bmi ? String(bmi) : '—' },
+                { label: 'TDEE',           value: `${tdee} kcal/day` },
+                { label: 'Deficit Goal',   value: `${deficitGoal} kcal/day` },
               ].map(item => (
-                <div key={item.label} className="flex justify-between text-xs">
-                  <span className="text-slate-500">{item.label}</span>
-                  <span className="text-slate-200 font-medium">{item.value}</span>
+                <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
+                  <span style={{ color: 'var(--text2)' }}>{item.label}</span>
+                  <span style={{ color: 'var(--text)', fontWeight: 600 }}>{item.value}</span>
                 </div>
               ))}
-              <div className="mt-3 pt-2" style={{ borderTop: '1px solid #334155' }}>
-                <div className="text-xs text-slate-500 mb-1">Progress to target</div>
+              <div style={{ borderTop: '1px solid var(--border)', marginTop: 4, paddingTop: 12 }}>
+                <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 6 }}>Progress to target</div>
                 {(() => {
                   const start = profile.currentWeight;
                   const current = latestWeight?.weight || profile.currentWeight;
                   const target = profile.targetWeight;
-                  const pct = start > target
-                    ? Math.min(100, Math.round(((start - current) / (start - target)) * 100))
-                    : 0;
+                  const pct = start > target ? Math.min(100, Math.round(((start - current) / (start - target)) * 100)) : 0;
                   return (
                     <>
-                      <div className="h-2 rounded-full" style={{ background: '#334155' }}>
-                        <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, background: '#22c55e' }} />
+                      <div className="progress-track">
+                        <div className="progress-fill" style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #2dd4a0, #4f8ef5)' }} />
                       </div>
-                      <div className="text-xs text-green-400 mt-1">{pct}% achieved</div>
+                      <div style={{ fontSize: 12, color: '#2dd4a0', fontWeight: 600, marginTop: 5 }}>{pct}% achieved</div>
                     </>
                   );
                 })()}
               </div>
             </div>
           ) : (
-            <p className="text-xs text-slate-500">Complete your profile to see goals.</p>
+            <p style={{ fontSize: 13, color: 'var(--text3)' }}>Complete your profile to see goals.</p>
           )}
         </div>
       </div>
+
+      <style>{`
+        @media (min-width: 1024px) {
+          .lg-4-cols  { grid-template-columns: repeat(4,1fr) !important; }
+          .lg-3-cols-2-1 { grid-template-columns: 2fr 1fr !important; }
+          .lg-2-cols  { grid-template-columns: repeat(2,1fr) !important; }
+        }
+      `}</style>
     </div>
   );
 }
