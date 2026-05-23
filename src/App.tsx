@@ -36,9 +36,13 @@ function adjustDate(date: string, delta: number) {
 }
 
 async function loadFromSupabase(uid: string) {
+  const safe = <T,>(p: Promise<T>, fallback: T) => p.catch(() => fallback);
   const [food, workout, weight, glucose, profile] = await Promise.all([
-    fetchFoodEntries(uid), fetchWorkoutEntries(uid), fetchWeightEntries(uid),
-    fetchGlucoseEntries(uid), fetchProfile(uid),
+    safe(fetchFoodEntries(uid),   []),
+    safe(fetchWorkoutEntries(uid),[]),
+    safe(fetchWeightEntries(uid), []),
+    safe(fetchGlucoseEntries(uid),[]),
+    safe(fetchProfile(uid),       null),
   ]);
   localStorage.setItem(STORAGE_KEYS.food,    JSON.stringify(food));
   localStorage.setItem(STORAGE_KEYS.workout, JSON.stringify(workout));
@@ -66,9 +70,9 @@ export default function App() {
       if (session) { setSyncUser(session.user.id); await loadFromSupabase(session.user.id); setSession(session); refresh(); }
       setLoading(false);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_e, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) { setSyncUser(session.user.id); await loadFromSupabase(session.user.id); setSession(session); refresh(); }
-      else { setSyncUser(null); clearLocalData(); setSession(null); refresh(); }
+      else if (event === 'SIGNED_OUT') { setSyncUser(null); clearLocalData(); setSession(null); refresh(); }
     });
     return () => subscription.unsubscribe();
   }, []);
