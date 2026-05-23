@@ -1,18 +1,20 @@
 import { format } from 'date-fns';
-import { Flame, Apple, Dumbbell, TrendingDown, Scale, Target, Activity } from 'lucide-react';
+import { Flame, Apple, Dumbbell, TrendingDown, Scale, Target, Activity, Droplets } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell,
+  PieChart, Pie, Cell, LineChart, Line, ReferenceLine,
 } from 'recharts';
-import type { FoodEntry, WorkoutEntry, WeightEntry, UserProfile } from '../types';
+import type { FoodEntry, WorkoutEntry, WeightEntry, UserProfile, GlucoseEntry } from '../types';
 import { getDailySummary, calculateTDEE, calculateBMI, getGlycemicCategory, getLast7Days } from '../utils/calculations';
 import { saveWeightEntry, generateId } from '../utils/storage';
+import { getGlucoseStatus, estimateHbA1c } from './GlucoseTracker';
 import { useState } from 'react';
 
 interface Props {
   foodEntries: FoodEntry[];
   workoutEntries: WorkoutEntry[];
   weightEntries: WeightEntry[];
+  glucoseEntries: GlucoseEntry[];
   profile: UserProfile | null;
   selectedDate: string;
   onUpdate: () => void;
@@ -20,7 +22,7 @@ interface Props {
 
 const MACRO_COLORS = ['#3b82f6', '#22c55e', '#f97316'];
 
-export default function Dashboard({ foodEntries, workoutEntries, weightEntries, profile, selectedDate, onUpdate }: Props) {
+export default function Dashboard({ foodEntries, workoutEntries, weightEntries, glucoseEntries, profile, selectedDate, onUpdate }: Props) {
   const [weightInput, setWeightInput] = useState('');
 
   const today = getDailySummary(selectedDate, foodEntries, workoutEntries, weightEntries, profile);
@@ -62,6 +64,18 @@ export default function Dashboard({ foodEntries, workoutEntries, weightEntries, 
   }
 
   const giCat = getGlycemicCategory(today.avgGlycemicIndex);
+
+  // Glucose
+  const hba1c = estimateHbA1c(glucoseEntries);
+  const recentGlucose = [...glucoseEntries]
+    .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`))
+    .slice(-20)
+    .map(e => ({
+      label: `${format(new Date(e.date), 'MMM dd')} ${e.time}`,
+      value: e.value,
+      color: getGlucoseStatus(e.value, e.context).color,
+    }));
+  const latestGlucose = recentGlucose[recentGlucose.length - 1];
 
   return (
     <div className="space-y-5">
@@ -205,6 +219,85 @@ export default function Dashboard({ foodEntries, workoutEntries, weightEntries, 
               <p className="text-xs text-slate-600 py-2">No GI data yet</p>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Glucose widget */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Glucose chart */}
+        <div className="lg:col-span-2 rounded-xl p-4" style={{ background: '#1e293b' }}>
+          <h3 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
+            <Droplets size={16} className="text-blue-400" /> Blood Glucose (mg/dL)
+          </h3>
+          {recentGlucose.length > 0 ? (
+            <>
+              <ResponsiveContainer width="100%" height={160}>
+                <LineChart data={recentGlucose} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+                  <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false}
+                    interval={Math.max(0, Math.floor(recentGlucose.length / 5) - 1)} />
+                  <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} domain={['auto', 'auto']} />
+                  <Tooltip
+                    contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }}
+                    formatter={(v: any) => [`${v} mg/dL`, 'Glucose']}
+                  />
+                  <ReferenceLine y={70}  stroke="#ef444466" strokeDasharray="4 4" />
+                  <ReferenceLine y={140} stroke="#f59e0b66" strokeDasharray="4 4" />
+                  <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2}
+                    dot={(p: any) => <circle key={p.index} cx={p.cx} cy={p.cy} r={4} fill={p.payload.color} />}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+              <div className="flex gap-4 mt-1 text-xs text-slate-600">
+                <span style={{ borderBottom: '1px dashed #ef4444' }} className="pr-1">70 low</span>
+                <span style={{ borderBottom: '1px dashed #f59e0b' }} className="pr-1">140 elevated</span>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-32 text-slate-600 text-sm">
+              No glucose readings yet — log from the Glucose tab
+            </div>
+          )}
+        </div>
+
+        {/* HbA1c + latest */}
+        <div className="space-y-3">
+          <div className="rounded-xl p-4" style={{ background: '#1e293b' }}>
+            <h3 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+              <Droplets size={14} className="text-blue-400" /> Estimated HbA1c
+            </h3>
+            {hba1c != null ? (
+              <>
+                <div className="text-4xl font-bold" style={{
+                  color: hba1c < 5.7 ? '#22c55e' : hba1c < 6.5 ? '#f59e0b' : '#ef4444'
+                }}>{hba1c}%</div>
+                <div className="text-xs mt-1" style={{
+                  color: hba1c < 5.7 ? '#22c55e' : hba1c < 6.5 ? '#f59e0b' : '#ef4444'
+                }}>
+                  {hba1c < 5.7 ? 'Normal' : hba1c < 6.5 ? 'Prediabetes range' : 'Diabetes range'}
+                </div>
+                <div className="mt-3 space-y-1">
+                  {[['< 5.7%', 'Normal', '#22c55e'], ['5.7–6.4%', 'Prediabetes', '#f59e0b'], ['≥ 6.5%', 'Diabetes', '#ef4444']]
+                    .map(([range, label, color]) => (
+                      <div key={label} className="flex justify-between text-xs">
+                        <span className="text-slate-500">{label}</span>
+                        <span style={{ color }}>{range}</span>
+                      </div>
+                    ))}
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-slate-600 py-2">Log glucose readings to see HbA1c estimate</p>
+            )}
+          </div>
+
+          {latestGlucose && (
+            <div className="rounded-xl p-4" style={{ background: '#1e293b' }}>
+              <div className="text-xs text-slate-400 mb-1">Latest Reading</div>
+              <div className="text-3xl font-bold" style={{ color: latestGlucose.color }}>{latestGlucose.value}</div>
+              <div className="text-xs text-slate-500">mg/dL • {latestGlucose.label}</div>
+            </div>
+          )}
         </div>
       </div>
 

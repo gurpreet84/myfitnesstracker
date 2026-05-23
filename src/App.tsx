@@ -2,18 +2,19 @@ import { useState, useCallback, useEffect } from 'react';
 import { format } from 'date-fns';
 import {
   LayoutDashboard, Apple, Dumbbell, TrendingUp, Brain, User,
-  ChevronLeft, ChevronRight, Activity, LogOut, Loader2,
+  ChevronLeft, ChevronRight, Activity, LogOut, Loader2, Droplets,
 } from 'lucide-react';
 import type { Session } from '@supabase/supabase-js';
 import type { ViewType } from './types';
 import { supabase } from './utils/supabase';
 import { setSyncUser, clearLocalData, STORAGE_KEYS } from './utils/storage';
-import { getFoodEntries, getWorkoutEntries, getWeightEntries, getProfile } from './utils/storage';
-import { fetchFoodEntries, fetchWorkoutEntries, fetchWeightEntries, fetchProfile } from './utils/db';
+import { getFoodEntries, getWorkoutEntries, getWeightEntries, getProfile, getGlucoseEntries } from './utils/storage';
+import { fetchFoodEntries, fetchWorkoutEntries, fetchWeightEntries, fetchProfile, fetchGlucoseEntries } from './utils/db';
 import Auth from './components/Auth';
 import Dashboard from './components/Dashboard';
 import FoodTracker from './components/FoodTracker';
 import WorkoutTracker from './components/WorkoutTracker';
+import GlucoseTracker from './components/GlucoseTracker';
 import TrendAnalysis from './components/TrendAnalysis';
 import WeightPrediction from './components/WeightPrediction';
 import ProfileSetup from './components/ProfileSetup';
@@ -22,6 +23,7 @@ const NAV_ITEMS: { view: ViewType; label: string; icon: React.ReactNode; color: 
   { view: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} />, color: '#2563eb' },
   { view: 'food',      label: 'Food',      icon: <Apple size={18} />,           color: '#f59e0b' },
   { view: 'workout',   label: 'Workout',   icon: <Dumbbell size={18} />,        color: '#7c3aed' },
+  { view: 'glucose',   label: 'Glucose',   icon: <Droplets size={18} />,        color: '#3b82f6' },
   { view: 'trends',    label: 'Trends',    icon: <TrendingUp size={18} />,      color: '#22c55e' },
   { view: 'prediction',label: 'Prediction',icon: <Brain size={18} />,           color: '#0ea5e9' },
   { view: 'profile',   label: 'Profile',   icon: <User size={18} />,            color: '#64748b' },
@@ -34,15 +36,17 @@ function adjustDate(date: string, delta: number): string {
 }
 
 async function loadFromSupabase(userId: string) {
-  const [food, workout, weight, profile] = await Promise.all([
+  const [food, workout, weight, glucose, profile] = await Promise.all([
     fetchFoodEntries(userId),
     fetchWorkoutEntries(userId),
     fetchWeightEntries(userId),
+    fetchGlucoseEntries(userId),
     fetchProfile(userId),
   ]);
   localStorage.setItem(STORAGE_KEYS.food,    JSON.stringify(food));
   localStorage.setItem(STORAGE_KEYS.workout, JSON.stringify(workout));
   localStorage.setItem(STORAGE_KEYS.weight,  JSON.stringify(weight));
+  localStorage.setItem(STORAGE_KEYS.glucose, JSON.stringify(glucose));
   if (profile) localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(profile));
 }
 
@@ -57,6 +61,7 @@ export default function App() {
   const foodEntries    = getFoodEntries();
   const workoutEntries = getWorkoutEntries();
   const weightEntries  = getWeightEntries();
+  const glucoseEntries = getGlucoseEntries();
   const profile        = getProfile();
 
   useEffect(() => {
@@ -131,7 +136,7 @@ export default function App() {
 
             <div className="flex items-center gap-3">
               {/* Date picker */}
-              {(view === 'food' || view === 'workout' || view === 'dashboard') && (
+              {(view === 'food' || view === 'workout' || view === 'dashboard' || view === 'glucose') && (
                 <div className="flex items-center gap-2">
                   <button onClick={() => setSelectedDate(d => adjustDate(d, -1))}
                     className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-slate-700 transition-colors"
@@ -201,16 +206,17 @@ export default function App() {
                 <span style={{ color: activeNav.color }}>{activeNav.icon}</span>
                 {activeNav.label}
               </h1>
-              {(view === 'food' || view === 'workout') && (
+              {(view === 'food' || view === 'workout' || view === 'glucose') && (
                 <p className="text-xs text-slate-500 mt-0.5">
                   {format(new Date(selectedDate), 'EEEE, MMMM do, yyyy')}
                 </p>
               )}
             </div>
 
-            {view === 'dashboard'  && <Dashboard foodEntries={foodEntries} workoutEntries={workoutEntries} weightEntries={weightEntries} profile={profile} selectedDate={selectedDate} onUpdate={refresh} />}
+            {view === 'dashboard'  && <Dashboard foodEntries={foodEntries} workoutEntries={workoutEntries} weightEntries={weightEntries} glucoseEntries={glucoseEntries} profile={profile} selectedDate={selectedDate} onUpdate={refresh} />}
             {view === 'food'       && <FoodTracker entries={foodEntries} onUpdate={refresh} selectedDate={selectedDate} />}
             {view === 'workout'    && <WorkoutTracker entries={workoutEntries} onUpdate={refresh} selectedDate={selectedDate} userWeight={profile?.currentWeight || 70} />}
+            {view === 'glucose'    && <GlucoseTracker entries={glucoseEntries} onUpdate={refresh} selectedDate={selectedDate} />}
             {view === 'trends'     && <TrendAnalysis foodEntries={foodEntries} workoutEntries={workoutEntries} weightEntries={weightEntries} profile={profile} />}
             {view === 'prediction' && <WeightPrediction foodEntries={foodEntries} workoutEntries={workoutEntries} weightEntries={weightEntries} profile={profile} />}
             {view === 'profile'    && <ProfileSetup profile={profile} onSave={refresh} />}

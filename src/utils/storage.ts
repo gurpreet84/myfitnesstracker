@@ -1,8 +1,9 @@
-import type { FoodEntry, WorkoutEntry, WeightEntry, UserProfile } from '../types';
+import type { FoodEntry, WorkoutEntry, WeightEntry, UserProfile, GlucoseEntry } from '../types';
 import {
   upsertFoodEntry, removeFoodEntry,
   upsertWorkoutEntry, removeWorkoutEntry,
   upsertWeightEntry, upsertProfile,
+  upsertGlucoseEntry, removeGlucoseEntry,
 } from './db';
 
 export const STORAGE_KEYS = {
@@ -10,6 +11,7 @@ export const STORAGE_KEYS = {
   workout: 'fit_workout_entries',
   weight: 'fit_weight_entries',
   profile: 'fit_user_profile',
+  glucose: 'fit_glucose_entries',
 } as const;
 
 // Current authenticated user — set by App on login/logout
@@ -73,6 +75,22 @@ export const getProfile = (): UserProfile | null => loadOne<UserProfile>(STORAGE
 export const saveProfile = (profile: UserProfile): void => {
   localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(profile));
   if (_uid) upsertProfile(_uid, profile);
+};
+
+// ─── Glucose ──────────────────────────────────────────────────────────────────
+export const getGlucoseEntries = (): GlucoseEntry[] => load<GlucoseEntry>(STORAGE_KEYS.glucose);
+
+export const saveGlucoseEntry = (entry: GlucoseEntry): void => {
+  const entries = getGlucoseEntries();
+  const idx = entries.findIndex(e => e.id === entry.id);
+  if (idx >= 0) entries[idx] = entry; else entries.push(entry);
+  save(STORAGE_KEYS.glucose, entries);
+  if (_uid) upsertGlucoseEntry(_uid, entry);
+};
+
+export const deleteGlucoseEntry = (id: string): void => {
+  save(STORAGE_KEYS.glucose, getGlucoseEntries().filter(e => e.id !== id));
+  if (_uid) removeGlucoseEntry(_uid, id);
 };
 
 // ─── Clear all local data on logout ──────────────────────────────────────────

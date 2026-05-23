@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import type { FoodEntry, WorkoutEntry, WeightEntry, UserProfile } from '../types';
+import type { FoodEntry, WorkoutEntry, WeightEntry, UserProfile, GlucoseEntry } from '../types';
 
 // ─── Food ─────────────────────────────────────────────────────────────────────
 
@@ -82,6 +82,32 @@ export async function upsertWeightEntry(userId: string, e: WeightEntry): Promise
     id: e.id, user_id: userId, date: e.date, weight: e.weight, bmi: e.bmi ?? null,
   });
   if (error) console.error('upsertWeightEntry:', error.message);
+}
+
+// ─── Glucose ──────────────────────────────────────────────────────────────────
+
+export async function fetchGlucoseEntries(userId: string): Promise<GlucoseEntry[]> {
+  const { data, error } = await supabase
+    .from('glucose_entries').select('*').eq('user_id', userId);
+  if (error) throw error;
+  return (data ?? []).map(r => ({
+    id: r.id, date: r.date, time: r.time,
+    value: r.value, context: r.context, notes: r.notes,
+  }));
+}
+
+export async function upsertGlucoseEntry(userId: string, e: GlucoseEntry): Promise<void> {
+  const { error } = await supabase.from('glucose_entries').upsert({
+    id: e.id, user_id: userId, date: e.date, time: e.time,
+    value: e.value, context: e.context, notes: e.notes ?? null,
+  });
+  if (error) console.error('upsertGlucoseEntry:', error.message);
+}
+
+export async function removeGlucoseEntry(userId: string, id: string): Promise<void> {
+  const { error } = await supabase.from('glucose_entries')
+    .delete().eq('id', id).eq('user_id', userId);
+  if (error) console.error('removeGlucoseEntry:', error.message);
 }
 
 // ─── Profile ──────────────────────────────────────────────────────────────────

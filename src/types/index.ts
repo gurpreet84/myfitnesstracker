@@ -63,4 +63,13 @@ export interface DailySummary {
   weight?: number;
 }
 
-export type ViewType = 'dashboard' | 'food' | 'workout' | 'trends' | 'prediction' | 'profile';
+export interface GlucoseEntry {
+  id: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:MM
+  value: number; // mg/dL
+  context: 'fasting' | 'before_meal' | 'after_meal' | 'bedtime' | 'random';
+  notes?: string;
+}
+
+export type ViewType = 'dashboard' | 'food' | 'workout' | 'glucose' | 'trends' | 'prediction' | 'profile';
