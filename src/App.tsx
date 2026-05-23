@@ -245,7 +245,7 @@ export default function App() {
             {view === 'food'       && <FoodTracker entries={foodEntries} onUpdate={refresh} selectedDate={selectedDate} />}
             {view === 'workout'    && <WorkoutTracker entries={workoutEntries} onUpdate={refresh} selectedDate={selectedDate} userWeight={profile?.currentWeight || 70} />}
             {view === 'glucose'    && <GlucoseTracker entries={glucoseEntries} onUpdate={refresh} selectedDate={selectedDate} />}
-            {view === 'trends'     && <TrendAnalysis foodEntries={foodEntries} workoutEntries={workoutEntries} weightEntries={weightEntries} profile={profile} />}
+            {view === 'trends'     && <TrendAnalysis foodEntries={foodEntries} workoutEntries={workoutEntries} weightEntries={weightEntries} glucoseEntries={glucoseEntries} profile={profile} />}
             {view === 'prediction' && <WeightPrediction foodEntries={foodEntries} workoutEntries={workoutEntries} weightEntries={weightEntries} profile={profile} />}
             {view === 'profile'    && <ProfileSetup profile={profile} onSave={refresh} />}
           </main>
