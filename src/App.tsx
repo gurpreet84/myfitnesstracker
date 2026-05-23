@@ -93,9 +93,9 @@ export default function App() {
       if (session) { setSyncUser(session.user.id); await loadFromSupabase(session.user.id); setSession(session); refresh(); }
       setLoading(false);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) { setSyncUser(session.user.id); await loadFromSupabase(session.user.id); setSession(session); refresh(); }
-      else if (event === 'SIGNED_OUT') { setSyncUser(null); clearLocalData(); setSession(null); refresh(); }
+      else { setSyncUser(null); clearLocalData(); setSession(null); refresh(); }
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -180,7 +180,10 @@ export default function App() {
               )}
 
               {/* Logout */}
-              <button onClick={() => supabase.auth.signOut()}
+              <button onClick={async () => {
+                  const { error } = await supabase.auth.signOut();
+                  if (error) { setSyncUser(null); clearLocalData(); setSession(null); }
+                }}
                 title="Sign out"
                 style={{ width: 34, height: 34, borderRadius: 9, background: 'var(--card)',
                   border: '1px solid var(--border)', display: 'flex', alignItems: 'center',
