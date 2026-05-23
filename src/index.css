@@ -9,10 +9,16 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
   background: #0f172a;
   color: #e2e8f0;
+  /* iOS safe areas (notch / Dynamic Island / home bar) */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 #root {
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   max-width: 100%;
   text-align: left;
