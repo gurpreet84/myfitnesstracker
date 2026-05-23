@@ -21,9 +21,9 @@ interface Props {
 }
 
 const TT = {
-  contentStyle: { background: '#0e1628', border: '1px solid rgba(148,163,184,.12)', borderRadius: 10, fontSize: 12 },
-  labelStyle: { color: '#7e95b3' },
-  itemStyle: { color: '#dde4f0' },
+  contentStyle: { background: '#1c2128', border: '1px solid #30363d', borderRadius: 8, fontSize: 12 },
+  labelStyle: { color: '#8b949e' },
+  itemStyle: { color: '#e6edf3' },
 };
 
 export default function Dashboard({ foodEntries, workoutEntries, weightEntries, glucoseEntries, profile, selectedDate, onUpdate }: Props) {
@@ -95,10 +95,9 @@ export default function Dashboard({ foodEntries, workoutEntries, weightEntries, 
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
       {/* KPI row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}
-        className="lg-4-cols">
+      <div className="grid-cols-4">
         {kpis.map(k => (
-          <div key={k.label} className={`card ${k.glow}`}
+          <div key={k.label} className="card"
             style={{ padding: 18, background: k.grad }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text2)' }}>{k.label}</span>
@@ -110,8 +109,8 @@ export default function Dashboard({ foodEntries, workoutEntries, weightEntries, 
             </div>
             <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>{k.unit} · {k.sub}</div>
             {k.pct !== null && (
-              <div className="progress-track" style={{ marginTop: 12 }}>
-                <div className="progress-fill" style={{ width: `${k.pct}%`, background: k.color }} />
+              <div className="progress" style={{ marginTop: 12 }}>
+                <div className="progress-bar" style={{ width: `${k.pct}%`, background: k.color }} />
               </div>
             )}
           </div>
@@ -119,7 +118,7 @@ export default function Dashboard({ foodEntries, workoutEntries, weightEntries, 
       </div>
 
       {/* 7-day chart + macros */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }} className="lg-3-cols-2-1">
+      <div className="grid-dash-2-1">
         <div className="card" style={{ padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
             <Activity size={15} style={{ color: 'var(--blue)' }} />
@@ -186,8 +185,8 @@ export default function Dashboard({ foodEntries, workoutEntries, weightEntries, 
                   {today.avgGlycemicIndex}
                 </div>
                 <div style={{ fontSize: 11, color: giCat.color, marginTop: 3, fontWeight: 600 }}>{giCat.label}</div>
-                <div className="progress-track" style={{ marginTop: 10 }}>
-                  <div className="progress-fill" style={{ width: `${Math.min(100, today.avgGlycemicIndex)}%`, background: giCat.color }} />
+                <div className="progress" style={{ marginTop: 10 }}>
+                  <div className="progress-bar" style={{ width: `${Math.min(100, today.avgGlycemicIndex)}%`, background: giCat.color }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text3)', marginTop: 4 }}>
                   <span>Low &lt;55</span><span>Med &lt;70</span><span>High</span>
@@ -201,7 +200,7 @@ export default function Dashboard({ foodEntries, workoutEntries, weightEntries, 
       </div>
 
       {/* Glucose section */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }} className="lg-3-cols-2-1">
+      <div className="grid-dash-2-1">
         <div className="card" style={{ padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
             <Droplets size={15} style={{ color: 'var(--cyan)' }} />
@@ -230,7 +229,7 @@ export default function Dashboard({ foodEntries, workoutEntries, weightEntries, 
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div className="card kpi-cyan" style={{ padding: 18, background: 'linear-gradient(135deg, rgba(34,212,232,.1), transparent)' }}>
+          <div className="card" style={{ padding: 18, background: 'linear-gradient(135deg, rgba(34,212,232,.1), transparent)' }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text2)', marginBottom: 8 }}>Estimated HbA1c</div>
             {hba1c != null ? (
               <>
@@ -269,7 +268,7 @@ export default function Dashboard({ foodEntries, workoutEntries, weightEntries, 
       </div>
 
       {/* Weight + Goals */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1,1fr)', gap: 12 }} className="lg-2-cols">
+      <div className="grid-cols-2">
         <div className="card" style={{ padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
             <Scale size={15} style={{ color: 'var(--cyan)' }} />
@@ -323,8 +322,8 @@ export default function Dashboard({ foodEntries, workoutEntries, weightEntries, 
                   const pct = start > target ? Math.min(100, Math.round(((start - current) / (start - target)) * 100)) : 0;
                   return (
                     <>
-                      <div className="progress-track">
-                        <div className="progress-fill" style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #2dd4a0, #4f8ef5)' }} />
+                      <div className="progress">
+                        <div className="progress-bar" style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #2dd4a0, #4f8ef5)' }} />
                       </div>
                       <div style={{ fontSize: 12, color: '#2dd4a0', fontWeight: 600, marginTop: 5 }}>{pct}% achieved</div>
                     </>
@@ -338,13 +337,6 @@ export default function Dashboard({ foodEntries, workoutEntries, weightEntries, 
         </div>
       </div>
 
-      <style>{`
-        @media (min-width: 1024px) {
-          .lg-4-cols  { grid-template-columns: repeat(4,1fr) !important; }
-          .lg-3-cols-2-1 { grid-template-columns: 2fr 1fr !important; }
-          .lg-2-cols  { grid-template-columns: repeat(2,1fr) !important; }
-        }
-      `}</style>
     </div>
   );
 }

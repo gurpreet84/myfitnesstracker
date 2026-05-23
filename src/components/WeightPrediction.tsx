@@ -15,9 +15,9 @@ interface Props {
 }
 
 const TOOLTIP_STYLE = {
-  contentStyle: { background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 8, fontSize: 12 },
-  labelStyle: { color: 'var(--text2)' },
-  itemStyle: { color: 'var(--text)' },
+  contentStyle: { background: '#1c2128', border: '1px solid #30363d', borderRadius: 8, fontSize: 12 },
+  labelStyle: { color: '#8b949e' },
+  itemStyle: { color: '#e6edf3' },
 };
 
 function getBMICategory(bmi: number): { label: string; color: string } {
@@ -94,9 +94,9 @@ export default function WeightPrediction({ foodEntries, workoutEntries, weightEn
   });
 
   return (
-    <div className="space-y-5">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Summary cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid-cols-4">
         {[
           { label: 'Current Weight', value: `${currentWeight} kg`, sub: bmiCat ? `BMI: ${bmi} (${bmiCat.label})` : '—', color: bmiCat?.color || '#94a3b8' },
           { label: 'Target Weight', value: `${targetWeight} kg`, sub: bmiTargetCat ? `BMI: ${bmiTarget} (${bmiTargetCat.label})` : '—', color: bmiTargetCat?.color || '#22c55e' },
@@ -108,19 +108,19 @@ export default function WeightPrediction({ foodEntries, workoutEntries, weightEn
             color: '#0ea5e9',
           },
         ].map(c => (
-          <div key={c.label} className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
-            <div className="text-xs text-slate-400 mb-2">{c.label}</div>
-            <div className="text-xl font-bold" style={{ color: c.color }}>{c.value}</div>
-            <div className="text-xs text-slate-500 mt-1">{c.sub}</div>
+          <div key={c.label} className="card" style={{ padding: 16 }}>
+            <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 8 }}>{c.label}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: c.color, letterSpacing: '-.02em' }}>{c.value}</div>
+            <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>{c.sub}</div>
           </div>
         ))}
       </div>
 
       {/* Main prediction chart */}
-      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
-        <h3 className="text-sm font-semibold text-slate-300 mb-1">Predictive Weight Loss Chart</h3>
-        <p className="text-xs text-slate-500 mb-4">
-          Based on your 7-day average deficit of <span className="text-green-400">{Math.round(effectiveDeficit)} kcal/day</span>.
+      <div className="card">
+        <div className="section-title" style={{ marginBottom: 2 }}>Predictive Weight Loss Chart</div>
+        <p style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 16 }}>
+          Based on your 7-day average deficit of <span style={{ color: 'var(--green)' }}>{Math.round(effectiveDeficit)} kcal/day</span>.
           Shaded band = optimistic/conservative range. Green line = your actual logged weight.
         </p>
         <ResponsiveContainer width="100%" height={320}>
@@ -205,25 +205,25 @@ export default function WeightPrediction({ foodEntries, workoutEntries, weightEn
       </div>
 
       {/* Scenario comparison table */}
-      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
-        <h3 className="text-sm font-semibold text-slate-300 mb-4">Scenario Comparison</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+      <div className="card">
+        <div className="section-title">Scenario Comparison</div>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #334155' }}>
+              <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {['Scenario', 'Daily Deficit', 'Loss/Week', 'Weeks to Goal', 'Months to Goal'].map(h => (
-                  <th key={h} className="text-left py-2 px-3 text-xs text-slate-400 font-medium">{h}</th>
+                  <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: 12, color: 'var(--text2)', fontWeight: 500 }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {scenarios.map(s => (
-                <tr key={s.label} style={{ borderBottom: '1px solid #1f2937' }}>
-                  <td className="py-3 px-3 font-medium" style={{ color: s.color }}>{s.label}</td>
-                  <td className="py-3 px-3 text-slate-300">{Math.round(s.deficit)} kcal</td>
-                  <td className="py-3 px-3 text-slate-300">{s.kgPerWeek} kg</td>
-                  <td className="py-3 px-3 text-slate-300">{s.weeks === Infinity ? '∞' : s.weeks}</td>
-                  <td className="py-3 px-3 text-slate-300">{s.months === 'Infinity' ? '∞' : s.months}</td>
+                <tr key={s.label} style={{ borderBottom: '1px solid var(--border)' }}>
+                  <td style={{ padding: '12px', fontWeight: 600, color: s.color }}>{s.label}</td>
+                  <td style={{ padding: '12px', color: 'var(--text2)' }}>{Math.round(s.deficit)} kcal</td>
+                  <td style={{ padding: '12px', color: 'var(--text2)' }}>{s.kgPerWeek} kg</td>
+                  <td style={{ padding: '12px', color: 'var(--text2)' }}>{s.weeks === Infinity ? '∞' : s.weeks}</td>
+                  <td style={{ padding: '12px', color: 'var(--text2)' }}>{s.months === 'Infinity' ? '∞' : s.months}</td>
                 </tr>
               ))}
             </tbody>
@@ -232,37 +232,38 @@ export default function WeightPrediction({ foodEntries, workoutEntries, weightEn
       </div>
 
       {/* BMI gauge */}
-      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
-        <h3 className="text-sm font-semibold text-slate-300 mb-4">BMI Overview</h3>
-        <div className="grid grid-cols-2 gap-6">
+      <div className="card">
+        <div className="section-title">BMI Overview</div>
+        <div className="grid-cols-2">
           {[
             { label: 'Current BMI', bmi, cat: bmiCat },
             { label: 'Target BMI', bmi: bmiTarget, cat: bmiTargetCat },
           ].map(item => item.bmi && (
             <div key={item.label}>
-              <div className="text-xs text-slate-400 mb-2">{item.label}</div>
-              <div className="text-4xl font-bold mb-1" style={{ color: item.cat?.color }}>{item.bmi}</div>
-              <div className="text-sm" style={{ color: item.cat?.color }}>{item.cat?.label}</div>
+              <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 8 }}>{item.label}</div>
+              <div style={{ fontSize: 36, fontWeight: 800, marginBottom: 4, letterSpacing: '-.03em', color: item.cat?.color }}>{item.bmi}</div>
+              <div style={{ fontSize: 14, color: item.cat?.color }}>{item.cat?.label}</div>
               {/* BMI scale bar */}
-              <div className="mt-3 relative h-4 rounded-full overflow-hidden flex">
+              <div style={{ marginTop: 12, position: 'relative', height: 16, borderRadius: 99, overflow: 'hidden', display: 'flex' }}>
                 {[
                   { label: 'Under', max: 18.5, color: '#3b82f6', from: 10 },
                   { label: 'Normal', max: 25, color: '#22c55e', from: 18.5 },
                   { label: 'Over', max: 30, color: '#f59e0b', from: 25 },
                   { label: 'Obese', max: 40, color: '#ef4444', from: 30 },
                 ].map(seg => (
-                  <div key={seg.label} className="flex-1 relative" style={{ background: seg.color + '40' }}>
-                    <div className="absolute inset-0 flex items-center justify-center text-xs font-medium" style={{ color: seg.color, fontSize: 9 }}>
+                  <div key={seg.label} style={{ flex: 1, position: 'relative', background: seg.color + '40' }}>
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, color: seg.color, fontSize: 9 }}>
                       {seg.label}
                     </div>
                   </div>
                 ))}
               </div>
               {/* Indicator */}
-              <div className="relative mt-1 h-1">
+              <div style={{ position: 'relative', marginTop: 4, height: 4 }}>
                 <div
-                  className="absolute w-2 h-2 rounded-full -mt-0.5 transform -translate-x-1/2"
                   style={{
+                    position: 'absolute', width: 8, height: 8, borderRadius: '50%', marginTop: -2,
+                    transform: 'translateX(-50%)',
                     left: `${Math.min(95, Math.max(5, ((item.bmi - 10) / 30) * 100))}%`,
                     background: item.cat?.color,
                     top: 0,
@@ -275,26 +276,26 @@ export default function WeightPrediction({ foodEntries, workoutEntries, weightEn
       </div>
 
       {/* Motivation insight */}
-      <div className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--border-hi)' }}>
-        <h4 className="text-sm font-semibold text-slate-300 mb-2">💡 Insights</h4>
-        <ul className="space-y-2 text-xs text-slate-400">
+      <div className="card">
+        <div className="section-title">💡 Insights</div>
+        <ul style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12, color: 'var(--text2)', paddingLeft: 0, listStyle: 'none' }}>
           {effectiveDeficit < 100 && (
-            <li className="text-yellow-400">⚠ Your average daily deficit is very low. Try increasing activity or reducing calorie intake to reach your goal faster.</li>
+            <li style={{ color: 'var(--amber)' }}>⚠ Your average daily deficit is very low. Try increasing activity or reducing calorie intake to reach your goal faster.</li>
           )}
           {effectiveDeficit >= 100 && effectiveDeficit < 300 && (
-            <li className="text-blue-400">ℹ A modest deficit detected. Sustainable progress, but consider increasing to 500 kcal/day for faster results.</li>
+            <li style={{ color: 'var(--blue)' }}>ℹ A modest deficit detected. Sustainable progress, but consider increasing to 500 kcal/day for faster results.</li>
           )}
           {effectiveDeficit >= 300 && effectiveDeficit <= 750 && (
-            <li className="text-green-400">✓ Your deficit is in the healthy range (300–750 kcal). This promotes steady weight loss without muscle loss.</li>
+            <li style={{ color: 'var(--green)' }}>✓ Your deficit is in the healthy range (300–750 kcal). This promotes steady weight loss without muscle loss.</li>
           )}
           {effectiveDeficit > 750 && (
-            <li className="text-red-400">⚠ Very high deficit detected ({'>'} 750 kcal/day). Ensure you're getting adequate nutrition and consult a doctor.</li>
+            <li style={{ color: 'var(--red)' }}>⚠ Very high deficit detected ({'>'} 750 kcal/day). Ensure you're getting adequate nutrition and consult a doctor.</li>
           )}
           {weeklyLoss > 0 && (
-            <li>📉 At current pace, you're losing ~<span className="text-purple-400">{weeklyLoss.toFixed(2)} kg/week</span> ({(weeklyLoss * 4.3).toFixed(1)} kg/month).</li>
+            <li>📉 At current pace, you're losing ~<span style={{ color: 'var(--purple)' }}>{weeklyLoss.toFixed(2)} kg/week</span> ({(weeklyLoss * 4.3).toFixed(1)} kg/month).</li>
           )}
           {profile && currentWeight > profile.targetWeight && etaDays && (
-            <li>🎯 You're projected to reach your goal weight of <span className="text-cyan-400">{targetWeight} kg</span> in approximately <span className="text-cyan-400">{Math.ceil(etaDays / 30)} months</span>.</li>
+            <li>🎯 You're projected to reach your goal weight of <span style={{ color: 'var(--cyan)' }}>{targetWeight} kg</span> in approximately <span style={{ color: 'var(--cyan)' }}>{Math.ceil(etaDays / 30)} months</span>.</li>
           )}
           <li>🔥 1 kg of fat = 7,700 kcal. Every 7,700 kcal deficit = 1 kg lost.</li>
         </ul>

@@ -17,9 +17,9 @@ interface Props {
 type Period = 'weekly' | 'monthly' | 'yearly';
 
 const TOOLTIP_STYLE = {
-  contentStyle: { background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 8, fontSize: 12 },
-  labelStyle: { color: 'var(--text2)' },
-  itemStyle: { color: 'var(--text)' },
+  contentStyle: { background: '#1c2128', border: '1px solid #30363d', borderRadius: 8, fontSize: 12 },
+  labelStyle: { color: '#8b949e' },
+  itemStyle: { color: '#e6edf3' },
 };
 
 export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntries, profile }: Props) {
@@ -79,9 +79,9 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
     : null;
 
   return (
-    <div className="space-y-5">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Insight cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid-cols-4">
         {[
           { label: '7-Day Avg Deficit', value: avg7Deficit, unit: 'kcal/day', color: avg7Deficit >= 0 ? '#22c55e' : '#ef4444', good: avg7Deficit >= 300 },
           { label: '7-Day Avg Calories', value: avg7Calories, unit: 'kcal/day', color: '#f59e0b', good: null },
@@ -94,12 +94,12 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
             good: weightChange !== null && weightChange < 0,
           },
         ].map(c => (
-          <div key={c.label} className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
-            <div className="text-xs text-slate-400 mb-2">{c.label}</div>
-            <div className="text-2xl font-bold" style={{ color: c.color }}>{c.value}</div>
-            <div className="text-xs text-slate-500">{c.unit}</div>
+          <div key={c.label} className="card" style={{ padding: 16 }}>
+            <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 8 }}>{c.label}</div>
+            <div className="stat-value" style={{ color: c.color }}>{c.value}</div>
+            <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 3 }}>{c.unit}</div>
             {c.good !== null && (
-              <div className="mt-2 text-xs" style={{ color: c.good ? '#22c55e' : '#f59e0b' }}>
+              <div style={{ marginTop: 8, fontSize: 12, color: c.good ? '#22c55e' : '#f59e0b' }}>
                 {c.good ? '✓ On track' : '⚠ Needs attention'}
               </div>
             )}
@@ -108,15 +108,18 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
       </div>
 
       {/* Period selector */}
-      <div className="flex items-center gap-1 p-1 rounded-lg w-fit" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: 4, borderRadius: 8,
+        width: 'fit-content', background: 'var(--card)', border: '1px solid var(--border)' }}>
         {(['weekly', 'monthly', 'yearly'] as Period[]).map(p => (
           <button
             key={p}
+            type="button"
             onClick={() => setPeriod(p)}
-            className="px-4 py-1.5 rounded-md text-sm font-medium transition-all capitalize"
             style={{
-              background: period === p ? '#2563eb' : 'transparent',
-              color: period === p ? '#fff' : '#94a3b8',
+              padding: '6px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600, textTransform: 'capitalize',
+              cursor: 'pointer', border: 'none', transition: 'all .15s',
+              background: period === p ? 'var(--blue)' : 'transparent',
+              color: period === p ? '#fff' : 'var(--text2)',
             }}
           >
             {p}
@@ -125,9 +128,9 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
       </div>
 
       {/* Calorie deficit trend */}
-      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
-        <h3 className="text-sm font-semibold text-slate-300 mb-1">Calorie Deficit Trend</h3>
-        <p className="text-xs text-slate-500 mb-4">Positive = deficit (burning more than consuming). Target: {profile?.dailyCalorieDeficitGoal || 500} kcal</p>
+      <div className="card">
+        <div className="section-title" style={{ marginBottom: 2 }}>Calorie Deficit Trend</div>
+        <p style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 16 }}>Positive = deficit (burning more than consuming). Target: {profile?.dailyCalorieDeficitGoal || 500} kcal</p>
         <ResponsiveContainer width="100%" height={220}>
           <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
             <defs>
@@ -148,8 +151,8 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
       </div>
 
       {/* Calories in vs burned */}
-      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
-        <h3 className="text-sm font-semibold text-slate-300 mb-4">Calories Consumed vs. Burned</h3>
+      <div className="card">
+        <div className="section-title">Calories Consumed vs. Burned</div>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }} barGap={2}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.04)" />
@@ -164,8 +167,8 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
       </div>
 
       {/* Workout minutes trend */}
-      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
-        <h3 className="text-sm font-semibold text-slate-300 mb-4">Workout Minutes Trend</h3>
+      <div className="card">
+        <div className="section-title">Workout Minutes Trend</div>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.04)" />
@@ -179,8 +182,8 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
       </div>
 
       {/* Weight trend (line) */}
-      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
-        <h3 className="text-sm font-semibold text-slate-300 mb-4">Weight Trend</h3>
+      <div className="card">
+        <div className="section-title">Weight Trend</div>
         {chartData.some(d => d.weight !== null) ? (
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={chartData.filter(d => d.weight !== null)} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -195,14 +198,14 @@ export default function TrendAnalysis({ foodEntries, workoutEntries, weightEntri
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="text-center py-8 text-slate-500 text-sm">Log your weight daily to see the trend.</div>
+          <div className="empty-state" style={{ padding: '32px 20px', fontSize: 14 }}>Log your weight daily to see the trend.</div>
         )}
       </div>
 
       {/* Daily GI trend (last 30 days) */}
-      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
-        <h3 className="text-sm font-semibold text-slate-300 mb-1">Glycemic Index Trend (Last 30 Days)</h3>
-        <p className="text-xs text-slate-500 mb-4">Average GI of all foods consumed per day</p>
+      <div className="card">
+        <div className="section-title" style={{ marginBottom: 2 }}>Glycemic Index Trend (Last 30 Days)</div>
+        <p style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 16 }}>Average GI of all foods consumed per day</p>
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={dailyData.filter(d => d.gi > 0)} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,.04)" />

@@ -110,80 +110,75 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
   }
 
   return (
-    <div className="space-y-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Day summary */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid-cols-4">
         {[
-          { label: 'Duration', value: totalMins, unit: 'min', icon: <Timer size={16} />, color: '#3b82f6' },
-          { label: 'Burned', value: totalBurned, unit: 'kcal', icon: <Flame size={16} />, color: '#ef4444' },
-          { label: 'Steps', value: totalSteps.toLocaleString(), unit: 'steps', icon: <Footprints size={16} />, color: '#22c55e' },
-          { label: 'Distance', value: totalDist.toFixed(1), unit: 'km', icon: <Dumbbell size={16} />, color: '#f59e0b' },
+          { label: 'Duration', value: totalMins, unit: 'min', icon: <Timer size={16} />, color: 'var(--blue)' },
+          { label: 'Burned', value: totalBurned, unit: 'kcal', icon: <Flame size={16} />, color: 'var(--red)' },
+          { label: 'Steps', value: totalSteps.toLocaleString(), unit: 'steps', icon: <Footprints size={16} />, color: 'var(--green)' },
+          { label: 'Distance', value: totalDist.toFixed(1), unit: 'km', icon: <Dumbbell size={16} />, color: 'var(--amber)' },
         ].map(m => (
-          <div key={m.label} className="rounded-xl p-4" style={{ background: 'var(--card)', borderLeft: `3px solid ${m.color}` }}>
-            <div className="flex items-center gap-1 text-xs text-slate-400 mb-1">
-              <span style={{ color: m.color }}>{m.icon}</span> {m.label}
+          <div key={m.label} className="card" style={{ padding: 16, borderLeft: `3px solid ${m.color}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--text2)', marginBottom: 4 }}>
+              <span style={{ color: m.color, display: 'flex' }}>{m.icon}</span> {m.label}
             </div>
-            <div className="text-xl font-bold" style={{ color: m.color }}>{m.value}</div>
-            <div className="text-xs text-slate-500">{m.unit}</div>
+            <div className="stat-value" style={{ color: m.color }}>{m.value}</div>
+            <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 3 }}>{m.unit}</div>
           </div>
         ))}
       </div>
 
-      <button
-        onClick={() => setShowForm(!showForm)}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
-        style={{ background: '#7c3aed', color: '#fff' }}
-      >
-        <Plus size={16} /> Log Workout
-      </button>
+      <div>
+        <button type="button" onClick={() => setShowForm(!showForm)} className="btn"
+          style={{ background: 'var(--purple)', color: '#fff' }}>
+          <Plus size={16} /> Log Workout
+        </button>
+      </div>
 
       {showForm && (
-        <div className="rounded-xl p-5 space-y-4" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
-          <h3 className="font-semibold text-slate-200 flex items-center gap-2">
-            <Dumbbell size={18} className="text-purple-400" /> Add Workout
-          </h3>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="section-title">
+            <Dumbbell size={16} style={{ color: 'var(--purple)' }} /> Add Workout
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Workout type grid */}
             <div>
-              <label className="text-xs text-slate-400 mb-2 block">Activity Type</label>
-              <div className="grid grid-cols-4 gap-2">
+              <label className="label">Activity Type</label>
+              <div className="grid-cols-4">
                 {(Object.keys(WORKOUT_ICONS) as WorkoutType[]).map(t => (
                   <button
                     key={t}
                     type="button"
                     onClick={() => handleTypeChange(t)}
-                    className="rounded-lg py-2 px-2 text-xs font-medium flex flex-col items-center gap-1 transition-all"
                     style={{
-                      background: form.type === t ? WORKOUT_COLORS[t] + '33' : '#0f172a',
-                      border: `1px solid ${form.type === t ? WORKOUT_COLORS[t] : '#334155'}`,
-                      color: form.type === t ? WORKOUT_COLORS[t] : '#94a3b8',
+                      borderRadius: 8, padding: '8px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, transition: 'all .15s',
+                      background: form.type === t ? WORKOUT_COLORS[t] + '33' : 'var(--card2)',
+                      border: `1px solid ${form.type === t ? WORKOUT_COLORS[t] : 'var(--border)'}`,
+                      color: form.type === t ? WORKOUT_COLORS[t] : 'var(--text2)',
                     }}
                   >
-                    <span>{WORKOUT_ICONS[t]}</span>
-                    <span className="capitalize">{t.replace('_', ' ')}</span>
+                    <span style={{ fontSize: 16 }}>{WORKOUT_ICONS[t]}</span>
+                    <span style={{ textTransform: 'capitalize' }}>{t.replace('_', ' ')}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid-cols-2">
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">Workout Name</label>
-                <input
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+                <label className="label">Workout Name</label>
+                <input className="inp"
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   placeholder="e.g. Morning Run"
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">Time</label>
-                <input
-                  type="time"
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+                <label className="label">Time</label>
+                <input type="time" className="inp"
                   value={form.time}
                   onChange={e => setForm(f => ({ ...f, time: e.target.value }))}
                 />
@@ -192,96 +187,75 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
 
             {/* Intensity */}
             <div>
-              <label className="text-xs text-slate-400 mb-2 block">Intensity</label>
-              <div className="flex gap-2">
-                {(['low', 'moderate', 'high'] as const).map(lvl => (
-                  <button
-                    key={lvl}
-                    type="button"
-                    onClick={() => handleIntensityChange(lvl)}
-                    className="flex-1 py-2 rounded-lg text-xs font-medium capitalize transition-all"
-                    style={{
-                      background: form.intensity === lvl
-                        ? lvl === 'low' ? '#22c55e33' : lvl === 'moderate' ? '#f59e0b33' : '#ef444433'
-                        : '#0f172a',
-                      border: `1px solid ${form.intensity === lvl
-                        ? lvl === 'low' ? '#22c55e' : lvl === 'moderate' ? '#f59e0b' : '#ef4444'
-                        : '#334155'}`,
-                      color: form.intensity === lvl
-                        ? lvl === 'low' ? '#22c55e' : lvl === 'moderate' ? '#f59e0b' : '#ef4444'
-                        : '#94a3b8',
-                    }}
-                  >
-                    {lvl}
-                  </button>
-                ))}
+              <label className="label">Intensity</label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {(['low', 'moderate', 'high'] as const).map(lvl => {
+                  const c = lvl === 'low' ? 'var(--green)' : lvl === 'moderate' ? 'var(--amber)' : 'var(--red)';
+                  const active = form.intensity === lvl;
+                  return (
+                    <button
+                      key={lvl}
+                      type="button"
+                      onClick={() => handleIntensityChange(lvl)}
+                      style={{
+                        flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                        textTransform: 'capitalize', cursor: 'pointer', transition: 'all .15s',
+                        background: active ? (lvl === 'low' ? '#22c55e33' : lvl === 'moderate' ? '#f59e0b33' : '#ef444433') : 'var(--card2)',
+                        border: `1px solid ${active ? c : 'var(--border)'}`,
+                        color: active ? c : 'var(--text2)',
+                      }}
+                    >
+                      {lvl}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid-cols-3">
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">Duration (min) *</label>
-                <input
-                  required
-                  type="number"
-                  min="1"
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+                <label className="label">Duration (min) *</label>
+                <input required type="number" min="1" className="inp"
                   value={form.duration}
                   onChange={e => handleDurationChange(e.target.value)}
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">
+                <label className="label">
                   Calories Burned
                   <button
                     type="button"
-                    className="ml-2 text-blue-400"
+                    style={{ marginLeft: 8, color: 'var(--blue)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
                     onClick={() => setForm(f => ({ ...f, autoCalc: !f.autoCalc }))}
                   >
                     ({form.autoCalc ? 'auto' : 'manual'})
                   </button>
                 </label>
-                <input
-                  type="number"
-                  min="0"
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+                <input type="number" min="0" className="inp"
                   value={form.caloriesBurned}
                   onChange={e => setForm(f => ({ ...f, caloriesBurned: e.target.value, autoCalc: false }))}
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">Distance (km)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+                <label className="label">Distance (km)</label>
+                <input type="number" min="0" step="0.1" className="inp"
                   value={form.distance}
                   onChange={e => setForm(f => ({ ...f, distance: e.target.value }))}
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid-cols-2">
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">Steps</label>
-                <input
-                  type="number"
-                  min="0"
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+                <label className="label">Steps</label>
+                <input type="number" min="0" className="inp"
                   value={form.steps}
                   onChange={e => setForm(f => ({ ...f, steps: e.target.value }))}
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">Notes</label>
-                <input
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+                <label className="label">Notes</label>
+                <input className="inp"
                   value={form.notes}
                   onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                   placeholder="How did it feel?"
@@ -289,11 +263,11 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
               </div>
             </div>
 
-            <div className="flex gap-3 pt-1">
-              <button type="submit" className="px-5 py-2 rounded-lg text-sm font-medium" style={{ background: '#7c3aed', color: '#fff' }}>
+            <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
+              <button type="submit" className="btn" style={{ background: 'var(--purple)', color: '#fff' }}>
                 Save Workout
               </button>
-              <button type="button" className="px-5 py-2 rounded-lg text-sm font-medium" style={{ background: 'var(--card-hi)', color: 'var(--text2)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+              <button type="button" className="btn btn-ghost"
                 onClick={() => { setShowForm(false); setForm(emptyForm); }}>
                 Cancel
               </button>
@@ -303,37 +277,38 @@ export default function WorkoutTracker({ entries, onUpdate, selectedDate, userWe
       )}
 
       {/* Workout list */}
-      <div className="space-y-3">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {dayEntries.map(entry => (
-          <div key={entry.id} className="rounded-xl p-4 flex items-center gap-4" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
-            <div className="text-3xl">{WORKOUT_ICONS[entry.type]}</div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-slate-200">{entry.name}</span>
-                <span className="text-xs px-2 py-0.5 rounded-full capitalize" style={{ background: WORKOUT_COLORS[entry.type] + '22', color: WORKOUT_COLORS[entry.type] }}>
+          <div key={entry.id} className="card" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ fontSize: 30 }}>{WORKOUT_ICONS[entry.type]}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontWeight: 600, color: 'var(--text)' }}>{entry.name}</span>
+                <span className="tag" style={{ textTransform: 'capitalize', background: WORKOUT_COLORS[entry.type] + '22', color: WORKOUT_COLORS[entry.type] }}>
                   {entry.intensity}
                 </span>
               </div>
-              <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
-                <span><Timer size={10} className="inline mr-1" />{entry.duration} min</span>
-                <span><Flame size={10} className="inline mr-1" />{entry.caloriesBurned} kcal</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, fontSize: 12, color: 'var(--text3)', flexWrap: 'wrap' }}>
+                <span><Timer size={10} style={{ display: 'inline', marginRight: 4 }} />{entry.duration} min</span>
+                <span><Flame size={10} style={{ display: 'inline', marginRight: 4 }} />{entry.caloriesBurned} kcal</span>
                 {entry.distance && <span>📍 {entry.distance} km</span>}
-                {entry.steps && <span><Footprints size={10} className="inline mr-1" />{entry.steps.toLocaleString()} steps</span>}
+                {entry.steps && <span><Footprints size={10} style={{ display: 'inline', marginRight: 4 }} />{entry.steps.toLocaleString()} steps</span>}
               </div>
-              {entry.notes && <p className="text-xs text-slate-600 mt-1 italic">"{entry.notes}"</p>}
+              {entry.notes && <p style={{ fontSize: 12, color: 'var(--text3)', marginTop: 4, fontStyle: 'italic' }}>"{entry.notes}"</p>}
             </div>
-            <div className="text-right">
-              <div className="text-xs text-slate-600">{entry.time}</div>
-              <button onClick={() => { deleteWorkoutEntry(entry.id); onUpdate(); }} className="mt-2 text-slate-600 hover:text-red-400 transition-colors">
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 12, color: 'var(--text3)' }}>{entry.time}</div>
+              <button type="button" onClick={() => { deleteWorkoutEntry(entry.id); onUpdate(); }}
+                style={{ marginTop: 8, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text3)', display: 'flex', marginLeft: 'auto' }}>
                 <Trash2 size={14} />
               </button>
             </div>
           </div>
         ))}
         {dayEntries.length === 0 && !showForm && (
-          <div className="text-center py-12 text-slate-500">
-            <Dumbbell size={40} className="mx-auto mb-3 opacity-30" />
-            <p className="text-sm">No workouts logged for this day.</p>
+          <div className="empty-state">
+            <Dumbbell size={40} style={{ margin: '0 auto 12px', opacity: 0.3 }} />
+            <p style={{ fontSize: 14 }}>No workouts logged for this day.</p>
           </div>
         )}
       </div>

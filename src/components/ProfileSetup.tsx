@@ -50,41 +50,35 @@ export default function ProfileSetup({ profile, onSave }: Props) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5">
-      <div className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14 }}>
-        <h3 className="font-semibold text-slate-200 mb-5 flex items-center gap-2">
-          <User size={18} className="text-blue-400" /> Your Profile & Goals
-        </h3>
+    <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div className="card">
+        <div className="section-title" style={{ marginBottom: 20 }}>
+          <User size={16} style={{ color: 'var(--blue)' }} /> Your Profile & Goals
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {/* Basic info */}
           <div>
-            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Personal Info</h4>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2">
-                <label className="text-xs text-slate-400 mb-1 block">Your Name</label>
-                <input
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+            <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 12 }}>Personal Info</h4>
+            <div className="grid-cols-2">
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label className="label">Your Name</label>
+                <input className="inp"
                   value={form.name}
                   onChange={e => set('name', e.target.value)}
                   placeholder="Enter your name"
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">Age</label>
-                <input type="number" min="10" max="120"
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+                <label className="label">Age</label>
+                <input type="number" min="10" max="120" className="inp"
                   value={form.age}
                   onChange={e => set('age', Number(e.target.value))}
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">Gender</label>
-                <select
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+                <label className="label">Gender</label>
+                <select className="inp"
                   value={form.gender}
                   onChange={e => set('gender', e.target.value as UserProfile['gender'])}
                 >
@@ -94,19 +88,15 @@ export default function ProfileSetup({ profile, onSave }: Props) {
                 </select>
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">Height (cm)</label>
-                <input type="number" min="100" max="250"
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+                <label className="label">Height (cm)</label>
+                <input type="number" min="100" max="250" className="inp"
                   value={form.height}
                   onChange={e => set('height', Number(e.target.value))}
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">Current Weight (kg)</label>
-                <input type="number" min="30" max="300" step="0.1"
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+                <label className="label">Current Weight (kg)</label>
+                <input type="number" min="30" max="300" step="0.1" className="inp"
                   value={form.currentWeight}
                   onChange={e => set('currentWeight', Number(e.target.value))}
                 />
@@ -116,22 +106,18 @@ export default function ProfileSetup({ profile, onSave }: Props) {
 
           {/* Goals */}
           <div>
-            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Goals</h4>
-            <div className="grid grid-cols-2 gap-3">
+            <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 12 }}>Goals</h4>
+            <div className="grid-cols-2">
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">Target Weight (kg)</label>
-                <input type="number" min="30" max="300" step="0.1"
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+                <label className="label">Target Weight (kg)</label>
+                <input type="number" min="30" max="300" step="0.1" className="inp"
                   value={form.targetWeight}
                   onChange={e => set('targetWeight', Number(e.target.value))}
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">Daily Calorie Deficit Goal (kcal)</label>
-                <input type="number" min="100" max="1500" step="50"
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 outline-none"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border-hi)', borderRadius: 10 }}
+                <label className="label">Daily Calorie Deficit Goal (kcal)</label>
+                <input type="number" min="100" max="1500" step="50" className="inp"
                   value={form.dailyCalorieDeficitGoal}
                   onChange={e => set('dailyCalorieDeficitGoal', Number(e.target.value))}
                 />
@@ -141,47 +127,47 @@ export default function ProfileSetup({ profile, onSave }: Props) {
 
           {/* Activity level */}
           <div>
-            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Activity Level</h4>
-            <div className="space-y-2">
+            <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 12 }}>Activity Level</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {(Object.entries(activityLabels) as [UserProfile['activityLevel'], string][]).map(([val, label]) => (
-                <label key={val} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg transition-all"
-                  style={{
-                    background: form.activityLevel === val ? '#2563eb22' : '#0f172a',
-                    border: `1px solid ${form.activityLevel === val ? '#2563eb' : '#334155'}`,
+                <label key={val} style={{
+                    display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: 12, borderRadius: 8, transition: 'all .15s',
+                    background: form.activityLevel === val ? '#2563eb22' : 'var(--card2)',
+                    border: `1px solid ${form.activityLevel === val ? 'var(--blue)' : 'var(--border)'}`,
                   }}>
                   <input type="radio" name="activity" value={val} checked={form.activityLevel === val}
-                    onChange={() => set('activityLevel', val)} className="hidden" />
-                  <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center"
-                    style={{ borderColor: form.activityLevel === val ? '#2563eb' : '#334155' }}>
-                    {form.activityLevel === val && <div className="w-2 h-2 rounded-full" style={{ background: '#2563eb' }} />}
+                    onChange={() => set('activityLevel', val)} style={{ display: 'none' }} />
+                  <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    borderColor: form.activityLevel === val ? 'var(--blue)' : 'var(--border)' }}>
+                    {form.activityLevel === val && <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--blue)' }} />}
                   </div>
-                  <span className="text-sm text-slate-300">{label}</span>
+                  <span style={{ fontSize: 14, color: 'var(--text2)' }}>{label}</span>
                 </label>
               ))}
             </div>
           </div>
 
           {/* Calculated values preview */}
-          <div className="rounded-xl p-4 space-y-3" style={{ background: 'var(--bg)' }}>
-            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Calculated Values</h4>
-            <div className="grid grid-cols-3 gap-3">
+          <div style={{ background: 'var(--card2)', borderRadius: 8, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <h4 style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '.06em' }}>Calculated Values</h4>
+            <div className="grid-cols-3">
               {[
-                { label: 'TDEE', value: `${tdee} kcal/day`, sub: 'Total daily energy', color: '#f59e0b' },
-                { label: 'Calorie Goal', value: `${tdee - form.dailyCalorieDeficitGoal} kcal/day`, sub: 'To hit deficit', color: '#3b82f6' },
-                { label: 'BMI', value: String(bmi), sub: bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Overweight' : 'Obese', color: bmi < 25 ? '#22c55e' : bmi < 30 ? '#f59e0b' : '#ef4444' },
+                { label: 'TDEE', value: `${tdee} kcal/day`, sub: 'Total daily energy', color: 'var(--amber)' },
+                { label: 'Calorie Goal', value: `${tdee - form.dailyCalorieDeficitGoal} kcal/day`, sub: 'To hit deficit', color: 'var(--blue)' },
+                { label: 'BMI', value: String(bmi), sub: bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Overweight' : 'Obese', color: bmi < 25 ? 'var(--green)' : bmi < 30 ? 'var(--amber)' : 'var(--red)' },
               ].map(c => (
-                <div key={c.label} className="text-center">
-                  <div className="text-lg font-bold" style={{ color: c.color }}>{c.value}</div>
-                  <div className="text-xs text-slate-400">{c.label}</div>
-                  <div className="text-xs text-slate-600">{c.sub}</div>
+                <div key={c.label} style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: c.color }}>{c.value}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text2)' }}>{c.label}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text3)' }}>{c.sub}</div>
                 </div>
               ))}
             </div>
           </div>
 
           <button type="submit"
-            className="w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all"
-            style={{ background: saved ? '#22c55e' : '#2563eb', color: '#fff' }}>
+            className="btn"
+            style={{ width: '100%', padding: 12, justifyContent: 'center', background: saved ? 'var(--green)' : 'var(--blue)', color: '#fff' }}>
             <Save size={16} />
             {saved ? 'Saved!' : 'Save Profile'}
           </button>

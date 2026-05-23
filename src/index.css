@@ -48,6 +48,12 @@ input, select, textarea { font-family: inherit; }
   .grid-cols-4 { grid-template-columns: 1fr 1fr; }
 }
 
+/* Dashboard 2:1 split (chart + side panel) */
+.grid-dash-2-1 { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 1024px) {
+  .grid-dash-2-1 { grid-template-columns: 2fr 1fr; }
+}
+
 /* ── Layout ─────────────────────────────────────────────── */
 .page { max-width: 900px; margin: 0 auto; padding: 20px; padding-bottom: 80px; }
 
