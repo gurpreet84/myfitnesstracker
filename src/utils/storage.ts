@@ -75,10 +75,6 @@ export const saveProfile = (profile: UserProfile): void => {
   if (_uid) upsertProfile(_uid, profile);
 };
 
-// ─── API Key (local only, never synced) ───────────────────────────────────────
-export const getApiKey = (): string => localStorage.getItem('fit_anthropic_key') ?? '';
-export const saveApiKey = (key: string): void => localStorage.setItem('fit_anthropic_key', key);
-
 // ─── Clear all local data on logout ──────────────────────────────────────────
 export const clearLocalData = (): void => {
   Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));

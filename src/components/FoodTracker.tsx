@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { Plus, Trash2, Apple, Search, Sparkles, Loader2 } from 'lucide-react';
 import type { FoodEntry } from '../types';
-import { saveFoodEntry, deleteFoodEntry, generateId, getApiKey } from '../utils/storage';
+import { saveFoodEntry, deleteFoodEntry, generateId } from '../utils/storage';
 import { getGlycemicCategory } from '../utils/calculations';
 import { lookupFoodNutrition } from '../utils/aiFood';
 
@@ -188,15 +188,10 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
   async function lookupWithAI() {
     const query = search.trim() || form.name.trim();
     if (!query) return;
-    const apiKey = getApiKey();
-    if (!apiKey) {
-      setAiError('No API key set. Go to Profile → AI Food Lookup to add your Anthropic API key.');
-      return;
-    }
     setAiLoading(true);
     setAiError('');
     try {
-      const result = await lookupFoodNutrition(query, apiKey);
+      const result = await lookupFoodNutrition(query);
       setForm(f => ({
         ...f,
         name: result.name,
