@@ -20,14 +20,14 @@ import TrendAnalysis from './components/TrendAnalysis';
 import WeightPrediction from './components/WeightPrediction';
 import ProfileSetup from './components/ProfileSetup';
 
-const NAV: { view: ViewType; label: string; icon: React.ReactNode; color: string; gradient: string }[] = [
-  { view: 'dashboard',  label: 'Dashboard',  icon: <LayoutDashboard size={17} />, color: '#4f8ef5', gradient: 'rgba(79,142,245,.15)' },
-  { view: 'food',       label: 'Food',        icon: <Apple size={17} />,           color: '#f0ac3c', gradient: 'rgba(240,172,60,.15)' },
-  { view: 'workout',    label: 'Workout',     icon: <Dumbbell size={17} />,        color: '#a855f7', gradient: 'rgba(168,85,247,.15)' },
-  { view: 'glucose',    label: 'Glucose',     icon: <Droplets size={17} />,        color: '#22d4e8', gradient: 'rgba(34,212,232,.15)' },
-  { view: 'trends',     label: 'Trends',      icon: <TrendingUp size={17} />,      color: '#2dd4a0', gradient: 'rgba(45,212,160,.15)' },
-  { view: 'prediction', label: 'Prediction',  icon: <Brain size={17} />,           color: '#7c6ff0', gradient: 'rgba(124,111,240,.15)' },
-  { view: 'profile',    label: 'Profile',     icon: <User size={17} />,            color: '#7e95b3', gradient: 'rgba(126,149,179,.15)' },
+const NAV: { view: ViewType; label: string; icon: React.ReactNode; color: string }[] = [
+  { view: 'dashboard',  label: 'Dashboard',  icon: <LayoutDashboard size={17} />, color: '#2563eb' },
+  { view: 'food',       label: 'Food',        icon: <Apple size={17} />,           color: '#f59e0b' },
+  { view: 'workout',    label: 'Workout',     icon: <Dumbbell size={17} />,        color: '#8b5cf6' },
+  { view: 'glucose',    label: 'Glucose',     icon: <Droplets size={17} />,        color: '#06b6d4' },
+  { view: 'trends',     label: 'Trends',      icon: <TrendingUp size={17} />,      color: '#22c55e' },
+  { view: 'prediction', label: 'Prediction',  icon: <Brain size={17} />,           color: '#8b5cf6' },
+  { view: 'profile',    label: 'Profile',     icon: <User size={17} />,            color: '#8b949e' },
 ];
 
 function adjustDate(date: string, delta: number) {
@@ -103,7 +103,7 @@ export default function App() {
   if (loading) return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
-        <Loader2 size={32} style={{ color: 'var(--blue)', animation: 'spin 1s linear infinite', margin: '0 auto 12px' }} />
+        <Loader2 size={32} className="spin" style={{ color: 'var(--blue)', margin: '0 auto 12px' }} />
         <p style={{ color: 'var(--text2)', fontSize: 14 }}>Loading your data…</p>
       </div>
     </div>
@@ -120,115 +120,110 @@ export default function App() {
 
       {/* ── Header ─────────────────────────────────────────────── */}
       <header style={{
-        background: 'rgba(11,17,32,0.85)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: '1px solid var(--border)',
         position: 'sticky', top: 0, zIndex: 50,
+        background: 'rgba(13,17,23,0.9)', backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: '1px solid var(--border)',
       }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 58 }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px', height: 54, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
-            {/* Logo */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 0 16px rgba(99,102,241,.35)',
-              }}>
-                <Activity size={19} color="#fff" />
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+            <div style={{
+              width: 34, height: 34, borderRadius: 9,
+              background: 'var(--blue)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Activity size={18} color="#fff" />
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-.02em', color: 'var(--text)' }}>
+                FitTracker Pro
               </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-.02em', color: 'var(--text)' }}>
-                  FitTracker Pro
-                </div>
-                <div style={{ fontSize: 11, color: 'var(--text3)' }}>
-                  {profile?.name ? `Hi, ${profile.name}` : session.user.email}
-                </div>
+              <div style={{ fontSize: 11, color: 'var(--text3)' }}>
+                {profile?.name ? `Hi, ${profile.name}` : session.user.email}
               </div>
             </div>
+          </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {/* Date picker */}
-              {showDate && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6,
-                  background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, padding: '4px 8px' }}>
-                  <button onClick={() => setSelectedDate(d => adjustDate(d, -1))}
-                    style={{ width: 26, height: 26, borderRadius: 7, background: 'transparent', border: 'none',
-                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text2)' }}>
-                    <ChevronLeft size={14} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Date picker */}
+            {showDate && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4,
+                background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, padding: '3px 6px' }}>
+                <button onClick={() => setSelectedDate(d => adjustDate(d, -1))}
+                  style={{ width: 26, height: 26, borderRadius: 6, background: 'transparent', border: 'none',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text2)' }}>
+                  <ChevronLeft size={14} />
+                </button>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', minWidth: 88, textAlign: 'center' }}>
+                  {isToday ? 'Today' : format(new Date(selectedDate), 'MMM dd, yyyy')}
+                </span>
+                <button onClick={() => !isToday && setSelectedDate(d => adjustDate(d, 1))}
+                  disabled={isToday}
+                  style={{ width: 26, height: 26, borderRadius: 6, background: 'transparent', border: 'none',
+                    cursor: isToday ? 'default' : 'pointer', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', color: isToday ? 'var(--text3)' : 'var(--text2)' }}>
+                  <ChevronRight size={14} />
+                </button>
+                {!isToday && (
+                  <button onClick={() => setSelectedDate(format(new Date(), 'yyyy-MM-dd'))}
+                    style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, background: 'var(--card2)',
+                      border: '1px solid var(--border)', color: 'var(--text2)', cursor: 'pointer' }}>
+                    Today
                   </button>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', minWidth: 90, textAlign: 'center' }}>
-                    {isToday ? 'Today' : format(new Date(selectedDate), 'MMM dd, yyyy')}
-                  </span>
-                  <button onClick={() => !isToday && setSelectedDate(d => adjustDate(d, 1))}
-                    disabled={isToday}
-                    style={{ width: 26, height: 26, borderRadius: 7, background: 'transparent', border: 'none',
-                      cursor: isToday ? 'default' : 'pointer', display: 'flex', alignItems: 'center',
-                      justifyContent: 'center', color: isToday ? 'var(--text3)' : 'var(--text2)' }}>
-                    <ChevronRight size={14} />
-                  </button>
-                  {!isToday && (
-                    <button onClick={() => setSelectedDate(format(new Date(), 'yyyy-MM-dd'))}
-                      style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'var(--card-hi)',
-                        border: '1px solid var(--border-hi)', color: 'var(--text2)', cursor: 'pointer' }}>
-                      Today
-                    </button>
-                  )}
-                </div>
-              )}
+                )}
+              </div>
+            )}
 
-              {/* Logout */}
-              <button onClick={async () => {
-                  const { error } = await supabase.auth.signOut();
-                  if (error) { setSyncUser(null); clearLocalData(); setSession(null); }
-                }}
-                title="Sign out"
-                style={{ width: 34, height: 34, borderRadius: 9, background: 'var(--card)',
-                  border: '1px solid var(--border)', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', cursor: 'pointer', color: 'var(--text2)' }}>
-                <LogOut size={14} />
-              </button>
-            </div>
+            {/* Logout */}
+            <button onClick={async () => {
+                const { error } = await supabase.auth.signOut();
+                if (error) { setSyncUser(null); clearLocalData(); setSession(null); }
+              }}
+              title="Sign out"
+              style={{ width: 34, height: 34, borderRadius: 8, background: 'var(--card)',
+                border: '1px solid var(--border)', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', cursor: 'pointer', color: 'var(--text2)' }}>
+              <LogOut size={14} />
+            </button>
           </div>
         </div>
       </header>
 
       {/* Profile nudge */}
       {!profile && view !== 'profile' && (
-        <div style={{ background: 'rgba(79,142,245,.1)', borderBottom: '1px solid rgba(79,142,245,.2)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px', fontSize: 12 }}>
+        <div style={{ background: 'rgba(37,99,235,.1)', borderBottom: '1px solid rgba(37,99,235,.2)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+          padding: '8px 20px', fontSize: 12, maxWidth: 1100, margin: '0 auto' }}>
           <span style={{ color: '#93bbf7' }}>Complete your profile to enable calorie calculations and predictions.</span>
           <button onClick={() => setView('profile')}
-            style={{ color: 'var(--blue)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>
+            style={{ color: 'var(--blue)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>
             Set up now →
           </button>
         </div>
       )}
 
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '20px', paddingBottom: 90 }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '20px', paddingBottom: 90 }}>
         <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
 
-          {/* ── Sidebar ─────────────────────────────────────────── */}
-          <nav style={{ width: 200, flexShrink: 0, position: 'sticky', top: 78, display: 'none' }}
-            className="lg:block">
-            <div className="card" style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {NAV.map(item => (
-                <button key={item.view} onClick={() => setView(item.view)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '9px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                    fontSize: 13, fontWeight: 600, width: '100%', textAlign: 'left',
-                    transition: 'all .15s',
-                    background: view === item.view ? item.gradient : 'transparent',
-                    color: view === item.view ? item.color : 'var(--text2)',
-                    boxShadow: view === item.view ? `0 0 0 1px ${item.color}30` : 'none',
-                  }}>
-                  <span style={{ color: view === item.view ? item.color : 'var(--text3)' }}>{item.icon}</span>
-                  {item.label}
-                </button>
-              ))}
+          {/* ── Sidebar (desktop) ───────────────────────────────── */}
+          <nav className="sidebar" style={{ position: 'sticky', top: 74 }}>
+            <div className="card" style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {NAV.map(item => {
+                const active = view === item.view;
+                return (
+                  <button key={item.view} onClick={() => setView(item.view)}
+                    className="nav-item"
+                    style={{
+                      background: active ? `${item.color}1f` : 'transparent',
+                      color: active ? item.color : 'var(--text2)',
+                    }}>
+                    <span style={{ color: active ? item.color : 'var(--text3)', display: 'flex' }}>{item.icon}</span>
+                    {item.label}
+                  </button>
+                );
+              })}
             </div>
           </nav>
 
@@ -236,7 +231,7 @@ export default function App() {
           <main style={{ flex: 1, minWidth: 0 }}>
             <div style={{ marginBottom: 20 }}>
               <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text)' }}>
-                <span style={{ color: activeNav.color }}>{activeNav.icon}</span>
+                <span style={{ color: activeNav.color, display: 'flex' }}>{activeNav.icon}</span>
                 {activeNav.label}
               </h1>
               {showDate && view !== 'dashboard' && (
@@ -258,43 +253,29 @@ export default function App() {
       </div>
 
       {/* ── Mobile bottom nav ────────────────────────────────────── */}
-      <nav style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0,
-        background: 'rgba(11,17,32,0.92)', backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid var(--border)',
-        display: 'flex', paddingBottom: 'env(safe-area-inset-bottom)',
-        zIndex: 50,
-      }} className="lg:hidden">
-        {NAV.map(item => (
-          <button key={item.view} onClick={() => setView(item.view)}
-            style={{
-              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-              gap: 3, padding: '10px 4px', border: 'none', cursor: 'pointer',
-              background: 'transparent', transition: 'all .15s',
-              color: view === item.view ? item.color : 'var(--text3)',
-            }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: 9,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: view === item.view ? item.gradient : 'transparent',
-              transition: 'all .15s',
-            }}>
-              {item.icon}
-            </div>
-            <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '.02em' }}>{item.label}</span>
-          </button>
-        ))}
+      <nav className="bottom-nav show-mobile">
+        {NAV.map(item => {
+          const active = view === item.view;
+          return (
+            <button key={item.view} onClick={() => setView(item.view)}
+              style={{
+                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                gap: 3, padding: '10px 2px', border: 'none', cursor: 'pointer',
+                background: 'transparent', transition: 'all .15s',
+                color: active ? item.color : 'var(--text3)',
+              }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: 8,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: active ? `${item.color}1f` : 'transparent',
+              }}>
+                {item.icon}
+              </div>
+              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '.02em' }}>{item.label}</span>
+            </button>
+          );
+        })}
       </nav>
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .lg\\:block { display: block; }
-        .lg\\:hidden { display: flex; }
-        @media (min-width: 1024px) {
-          .lg\\:block { display: block !important; }
-          .lg\\:hidden { display: none !important; }
-        }
-      `}</style>
     </div>
   );
 }

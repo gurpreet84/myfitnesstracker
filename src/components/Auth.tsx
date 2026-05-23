@@ -35,18 +35,18 @@ export default function Auth() {
       <div style={{
         position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)',
         width: 600, height: 600, borderRadius: '50%', pointerEvents: 'none',
-        background: 'radial-gradient(circle, rgba(99,102,241,.07) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(37,99,235,.08) 0%, transparent 70%)',
       }} />
 
-      <div style={{ width: '100%', maxWidth: 400, position: 'relative' }}>
+      <div style={{ width: '100%', maxWidth: 380, position: 'relative' }}>
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{
-            width: 64, height: 64, borderRadius: 18,
-            background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+            width: 60, height: 60, borderRadius: 16,
+            background: 'var(--blue)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 16px',
-            boxShadow: '0 0 40px rgba(99,102,241,.4)',
+            boxShadow: '0 0 36px rgba(37,99,235,.4)',
           }}>
             <Activity size={30} color="#fff" />
           </div>
