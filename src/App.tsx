@@ -36,18 +36,29 @@ function adjustDate(date: string, delta: number) {
 }
 
 async function loadFromSupabase(uid: string) {
-  const safe = <T,>(p: Promise<T>, fallback: T) => p.catch(() => fallback);
+  const safe = <T,>(p: Promise<T[]>) => p.catch((): T[] | null => null);
   const [food, workout, weight, glucose, profile] = await Promise.all([
-    safe(fetchFoodEntries(uid),   []),
-    safe(fetchWorkoutEntries(uid),[]),
-    safe(fetchWeightEntries(uid), []),
-    safe(fetchGlucoseEntries(uid),[]),
-    safe(fetchProfile(uid),       null),
+    safe(fetchFoodEntries(uid)),
+    safe(fetchWorkoutEntries(uid)),
+    safe(fetchWeightEntries(uid)),
+    safe(fetchGlucoseEntries(uid)),
+    fetchProfile(uid).catch(() => null),
   ]);
-  localStorage.setItem(STORAGE_KEYS.food,    JSON.stringify(food));
-  localStorage.setItem(STORAGE_KEYS.workout, JSON.stringify(workout));
-  localStorage.setItem(STORAGE_KEYS.weight,  JSON.stringify(weight));
-  localStorage.setItem(STORAGE_KEYS.glucose, JSON.stringify(glucose));
+
+  // Merge remote into local: remote wins on id conflicts, local-only entries survive.
+  // If fetch threw (null) we leave localStorage untouched.
+  function merge<T extends { id: string }>(key: string, remote: T[] | null) {
+    if (remote === null) return;
+    const local: T[] = JSON.parse(localStorage.getItem(key) || '[]');
+    const map = new Map(local.map(e => [e.id, e]));
+    remote.forEach(e => map.set(e.id, e));
+    localStorage.setItem(key, JSON.stringify([...map.values()]));
+  }
+
+  merge(STORAGE_KEYS.food,    food);
+  merge(STORAGE_KEYS.workout, workout);
+  merge(STORAGE_KEYS.weight,  weight);
+  merge(STORAGE_KEYS.glucose, glucose);
   if (profile) localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(profile));
 }
 
