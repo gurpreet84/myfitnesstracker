@@ -132,26 +132,43 @@ export default function App() {
 
   useEffect(() => {
     applyTheme(getTheme());
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session) { setSyncUser(session.user.id); await loadFromSupabase(session.user.id); setSession(session); refresh(); }
-      setLoading(false);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session) { setSyncUser(session.user.id); await loadFromSupabase(session.user.id); setSession(session); refresh(); }
-      else { setSyncUser(null); clearLocalData(); setSession(null); refresh(); }
-    });
 
-    // Request notification permission + schedule daily reminders
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().then(perm => {
-        if (perm !== 'granted') return;
-        scheduleNotifications();
+    // Safety net: never leave the app stuck on the loading screen
+    const fallback = setTimeout(() => setLoading(false), 8000);
+
+    supabase.auth.getSession()
+      .then(async ({ data: { session } }) => {
+        if (session) {
+          setSyncUser(session.user.id);
+          await loadFromSupabase(session.user.id).catch(() => {});
+          setSession(session);
+          refresh();
+        }
+      })
+      .catch(err => console.error('getSession failed:', err))
+      .finally(() => { clearTimeout(fallback); setLoading(false); });
+
+    let subscription: { unsubscribe: () => void } | null = null;
+    try {
+      const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        if (session) { setSyncUser(session.user.id); await loadFromSupabase(session.user.id).catch(() => {}); setSession(session); refresh(); }
+        else { setSyncUser(null); clearLocalData(); setSession(null); refresh(); }
       });
-    } else if (Notification.permission === 'granted') {
-      scheduleNotifications();
+      subscription = data.subscription;
+    } catch (err) {
+      console.error('onAuthStateChange failed:', err);
     }
 
-    return () => subscription.unsubscribe();
+    // Notification reminders — best-effort, never block app load
+    try {
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().then(perm => { if (perm === 'granted') scheduleNotifications(); }).catch(() => {});
+      } else if ('Notification' in window && Notification.permission === 'granted') {
+        scheduleNotifications();
+      }
+    } catch { /* notifications unsupported */ }
+
+    return () => { clearTimeout(fallback); subscription?.unsubscribe(); };
   }, []);
 
   if (loading) return (
