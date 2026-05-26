@@ -149,14 +149,14 @@ export default function BarcodeScanner({ onResult, onClose }: Props) {
 
         {status === 'unsupported' || status === 'error' ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {status === 'unsupported' && (
+              <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(245,158,11,.1)', border: '1px solid rgba(245,158,11,.3)', fontSize: 13, color: '#fbbf24' }}>
+                Camera scanning requires Chrome or Edge on desktop/Android. Enter the barcode number from the product packaging below:
+              </div>
+            )}
             {status === 'error' && (
               <div style={{ display: 'flex', gap: 8, padding: '10px 14px', borderRadius: 8, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.3)', fontSize: 13, color: '#fca5a5' }}>
                 <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} /> {error}
-              </div>
-            )}
-            {status === 'unsupported' && (
-              <div style={{ fontSize: 13, color: 'var(--text2)', textAlign: 'center', padding: 8 }}>
-                Camera barcode scanning requires Chrome or Edge. Enter the barcode number manually:
               </div>
             )}
             <div style={{ display: 'flex', gap: 8 }}>

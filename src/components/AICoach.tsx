@@ -43,8 +43,10 @@ export default function AICoach({ foodEntries, workoutEntries, weightEntries, gl
     setInput('');
     setLoading(true);
 
-    const userMsg: Message = { role: 'user', content: q };
-    setMessages(prev => [...prev, userMsg, { role: 'assistant', content: '', streaming: true }]);
+    setMessages(prev => [...prev,
+      { role: 'user', content: q },
+      { role: 'assistant', content: '', streaming: true },
+    ]);
 
     try {
       const res = await fetch('/api/health-coach', {
@@ -61,53 +63,29 @@ export default function AICoach({ foodEntries, workoutEntries, weightEntries, gl
         }),
       });
 
-      if (!res.body) throw new Error('No response stream');
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
+      const data = await res.json();
+      const reply = data.error
+        ? `⚠️ ${data.error}`
+        : (data.text || 'No response received.');
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          const payload = line.slice(6);
-          if (payload === '[DONE]') continue;
-          try {
-            const { text, error } = JSON.parse(payload);
-            if (error) throw new Error(error);
-            if (text) {
-              setMessages(prev => {
-                const next = [...prev];
-                const last = next[next.length - 1];
-                if (last?.role === 'assistant') last.content += text;
-                return next;
-              });
-            }
-          } catch { /* malformed chunk, skip */ }
-        }
-      }
+      setMessages(prev => {
+        const next = [...prev];
+        const last = next[next.length - 1];
+        if (last?.role === 'assistant') { last.content = reply; delete last.streaming; }
+        return next;
+      });
     } catch (err: any) {
       setMessages(prev => {
         const next = [...prev];
         const last = next[next.length - 1];
         if (last?.role === 'assistant') {
-          last.content = `Sorry, I couldn't connect right now. ${err.message ?? ''}`;
+          last.content = `⚠️ Could not reach the AI Coach. Check your internet connection.`;
+          delete last.streaming;
         }
         return next;
       });
     }
 
-    setMessages(prev => {
-      const next = [...prev];
-      const last = next[next.length - 1];
-      if (last?.role === 'assistant') delete last.streaming;
-      return next;
-    });
     setLoading(false);
     inputRef.current?.focus();
   }

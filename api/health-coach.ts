@@ -6,7 +6,9 @@ export default async function handler(req: any, res: any) {
   const { profile, recentFood, recentWorkout, recentWeight, recentGlucose, recentMood, question } = req.body ?? {};
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'Anthropic API not configured on server' });
+  if (!apiKey) {
+    return res.status(500).json({ error: 'ANTHROPIC_API_KEY is not set on the server. Add it in Vercel → Settings → Environment Variables.' });
+  }
 
   const client = new Anthropic({ apiKey });
 
@@ -38,7 +40,7 @@ Activity: ${profile.activityLevel} | Calorie goal: ${profile.dailyCalorieGoal} k
     const latest = sorted[sorted.length - 1];
     const oldest = sorted[0];
     const delta = latest.weight - oldest.weight;
-    parts.push(`## Weight\nLatest: ${latest.weight}kg on ${latest.date} | Change over period: ${delta > 0 ? '+' : ''}${delta.toFixed(1)}kg`);
+    parts.push(`## Weight\nLatest: ${latest.weight}kg on ${latest.date} | Change: ${delta > 0 ? '+' : ''}${delta.toFixed(1)}kg`);
   }
 
   if (recentGlucose?.length) {
@@ -50,41 +52,30 @@ Activity: ${profile.activityLevel} | Calorie goal: ${profile.dailyCalorieGoal} k
 
   if (recentMood?.length) {
     const latest = recentMood[recentMood.length - 1];
-    parts.push(`## Latest Mood Check-in\nMood: ${latest.mood}/5, Energy: ${latest.energy}/5 on ${latest.date}${latest.notes ? ` — "${latest.notes}"` : ''}`);
+    parts.push(`## Latest Mood\nMood: ${latest.mood}/5, Energy: ${latest.energy}/5 on ${latest.date}`);
   }
 
-  const system = `You are an expert health and fitness coach with deep knowledge in nutrition, exercise physiology, glucose management, sleep science, and behavioral change. You have real access to this user's health data shown below.
+  const system = `You are an expert health and fitness coach with deep knowledge in nutrition, exercise physiology, glucose management, and behavioural change. You have real access to this user's health data shown below.
 
-Give warm, specific, data-driven advice. Reference actual numbers and patterns from their data. Keep responses concise — 2-4 paragraphs maximum. No bullet-point lists; write in a natural coaching voice. Use one or two emojis for warmth, not more. If you notice something concerning (e.g., high glucose, prolonged deficit, no workouts), mention it gently.
+Give warm, specific, data-driven advice. Reference actual numbers and patterns from their data. Keep responses concise — 2-4 paragraphs. Write in a natural coaching voice. Use one or two emojis for warmth. If you notice something concerning, mention it gently.
 
 ${parts.join('\n\n')}`;
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders?.();
-
   try {
-    const stream = client.messages.stream({
+    const message = await client.messages.create({
       model: 'claude-opus-4-7',
       max_tokens: 1024,
-      thinking: { type: 'adaptive' },
       system,
-      messages: [{ role: 'user', content: question || 'Give me a personalized health insight based on my data today.' }],
+      messages: [{ role: 'user', content: question || 'Give me a personalised health insight based on my data today.' }],
     });
 
-    for await (const event of stream) {
-      if (
-        event.type === 'content_block_delta' &&
-        event.delta.type === 'text_delta'
-      ) {
-        res.write(`data: ${JSON.stringify({ text: event.delta.text })}\n\n`);
-      }
-    }
-  } catch (err: any) {
-    res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
-  }
+    const text = message.content
+      .filter((b: any) => b.type === 'text')
+      .map((b: any) => (b as any).text)
+      .join('');
 
-  res.write('data: [DONE]\n\n');
-  res.end();
+    return res.status(200).json({ text });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message || 'Claude API error' });
+  }
 }
