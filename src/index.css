@@ -1,3 +1,4 @@
+/* ── Default (Dark) theme ───────────────────────────────── */
 :root {
   --bg:     #0d1117;
   --card:   #161b22;
@@ -12,6 +13,57 @@
   --red:    #ef4444;
   --purple: #8b5cf6;
   --cyan:   #06b6d4;
+}
+
+/* ── Cyberpunk theme ────────────────────────────────────── */
+[data-theme="cyberpunk"] {
+  --bg:     #06000f;
+  --card:   #0f0020;
+  --card2:  #180030;
+  --border: #5b0090;
+  --text:   #f0d0ff;
+  --text2:  #c060ff;
+  --text3:  #703090;
+  --blue:   #bf00ff;
+  --green:  #00ff90;
+  --amber:  #ffdd00;
+  --red:    #ff1060;
+  --purple: #bf00ff;
+  --cyan:   #00f5ff;
+}
+
+/* ── Aurora theme ───────────────────────────────────────── */
+[data-theme="aurora"] {
+  --bg:     #06101e;
+  --card:   #0b1a2e;
+  --card2:  #0f2240;
+  --border: #1e3d66;
+  --text:   #daeeff;
+  --text2:  #6baee0;
+  --text3:  #2f5e8a;
+  --blue:   #3b82f6;
+  --green:  #34d399;
+  --amber:  #fbbf24;
+  --red:    #f87171;
+  --purple: #a78bfa;
+  --cyan:   #22d3ee;
+}
+
+/* ── Paper (Light) theme ────────────────────────────────── */
+[data-theme="paper"] {
+  --bg:     #f2ede4;
+  --card:   #faf7f2;
+  --card2:  #ede8de;
+  --border: #cfc4ad;
+  --text:   #2a1f10;
+  --text2:  #6b5535;
+  --text3:  #a08860;
+  --blue:   #1d4ed8;
+  --green:  #15803d;
+  --amber:  #b45309;
+  --red:    #b91c1c;
+  --purple: #6d28d9;
+  --cyan:   #0e7490;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,6 +89,37 @@ input, select, textarea { font-family: inherit; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 1s linear infinite; }
 
+@keyframes pop-in {
+  0%   { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+  70%  { transform: scale(1.15) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.pop-in { animation: pop-in 0.4s cubic-bezier(.36,.07,.19,.97) forwards; }
+
+@keyframes streak-fire {
+  0%, 100% { transform: scaleY(1) rotate(-2deg); }
+  50%       { transform: scaleY(1.15) rotate(2deg); }
+}
+.streak-fire { animation: streak-fire 0.6s ease-in-out infinite; display: inline-block; }
+
+@keyframes slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.slide-up { animation: slide-up 0.35s ease forwards; }
+
+@keyframes badge-glow {
+  0%, 100% { box-shadow: 0 0 8px 2px currentColor; }
+  50%       { box-shadow: 0 0 20px 6px currentColor; }
+}
+.badge-glow { animation: badge-glow 1.5s ease-in-out infinite; }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.85); }
+}
+.pulse-dot { animation: pulse-dot 1.5s ease-in-out infinite; }
+
 /* ── Responsive grid helpers ────────────────────────────── */
 .grid-cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .grid-cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
@@ -48,7 +131,7 @@ input, select, textarea { font-family: inherit; }
   .grid-cols-4 { grid-template-columns: 1fr 1fr; }
 }
 
-/* Dashboard 2:1 split (chart + side panel) */
+/* Dashboard 2:1 split */
 .grid-dash-2-1 { display: grid; grid-template-columns: 1fr; gap: 12px; }
 @media (min-width: 1024px) {
   .grid-dash-2-1 { grid-template-columns: 2fr 1fr; }
@@ -181,6 +264,10 @@ input, select, textarea { font-family: inherit; }
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+[data-theme="paper"] .bottom-nav {
+  background: rgba(242,237,228,.97);
+}
+
 .sidebar { width: 200px; flex-shrink: 0; }
 
 .show-mobile { display: none; }
@@ -188,4 +275,36 @@ input, select, textarea { font-family: inherit; }
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .show-mobile { display: flex; }
+}
+
+/* ── Celebration overlay ────────────────────────────────── */
+.celebration-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── AI Coach chat bubbles ──────────────────────────────── */
+.chat-bubble-user {
+  background: var(--blue);
+  color: #fff;
+  border-radius: 18px 18px 4px 18px;
+  padding: 10px 14px;
+  font-size: 14px;
+  max-width: 80%;
+  align-self: flex-end;
+  line-height: 1.5;
+}
+.chat-bubble-ai {
+  background: var(--card2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 18px 18px 18px 4px;
+  padding: 10px 14px;
+  font-size: 14px;
+  max-width: 85%;
+  align-self: flex-start;
+  line-height: 1.6;
+  white-space: pre-wrap;
 }

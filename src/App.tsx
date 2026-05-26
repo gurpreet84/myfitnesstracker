@@ -3,14 +3,16 @@ import { format } from 'date-fns';
 import {
   LayoutDashboard, Apple, Dumbbell, TrendingUp, Brain, User,
   ChevronLeft, ChevronRight, Activity, LogOut, Loader2, Droplets,
+  Bot, Trophy, Smile, Palette,
 } from 'lucide-react';
 import type { Session } from '@supabase/supabase-js';
 import type { ViewType } from './types';
 import { supabase } from './utils/supabase';
 import { setSyncUser, clearLocalData, STORAGE_KEYS } from './utils/storage';
-import { getFoodEntries, getWorkoutEntries, getWeightEntries, getProfile, getGlucoseEntries } from './utils/storage';
+import { getFoodEntries, getWorkoutEntries, getWeightEntries, getProfile, getGlucoseEntries, getMoodEntries } from './utils/storage';
 import { fetchFoodEntries, fetchWorkoutEntries, fetchWeightEntries, fetchProfile, fetchGlucoseEntries,
          upsertFoodEntry, upsertWorkoutEntry, upsertWeightEntry, upsertGlucoseEntry } from './utils/db';
+import { getTheme, setTheme, applyTheme, THEMES, type Theme } from './utils/theme';
 import Auth from './components/Auth';
 import Dashboard from './components/Dashboard';
 import FoodTracker from './components/FoodTracker';
@@ -19,16 +21,40 @@ import GlucoseTracker from './components/GlucoseTracker';
 import TrendAnalysis from './components/TrendAnalysis';
 import WeightPrediction from './components/WeightPrediction';
 import ProfileSetup from './components/ProfileSetup';
+import AICoach from './components/AICoach';
+import Challenges from './components/Challenges';
+import MoodTracker from './components/MoodTracker';
+import { useCelebration, CelebrationToast } from './components/Celebration';
 
 const NAV: { view: ViewType; label: string; icon: React.ReactNode; color: string }[] = [
   { view: 'dashboard',  label: 'Dashboard',  icon: <LayoutDashboard size={17} />, color: '#2563eb' },
   { view: 'food',       label: 'Food',        icon: <Apple size={17} />,           color: '#f59e0b' },
   { view: 'workout',    label: 'Workout',     icon: <Dumbbell size={17} />,        color: '#8b5cf6' },
   { view: 'glucose',    label: 'Glucose',     icon: <Droplets size={17} />,        color: '#06b6d4' },
+  { view: 'mood',       label: 'Mood',        icon: <Smile size={17} />,           color: '#f97316' },
+  { view: 'coach',      label: 'AI Coach',    icon: <Bot size={17} />,             color: '#8b5cf6' },
+  { view: 'challenges', label: 'Challenges',  icon: <Trophy size={17} />,          color: '#f59e0b' },
   { view: 'trends',     label: 'Trends',      icon: <TrendingUp size={17} />,      color: '#22c55e' },
   { view: 'prediction', label: 'Prediction',  icon: <Brain size={17} />,           color: '#8b5cf6' },
   { view: 'profile',    label: 'Profile',     icon: <User size={17} />,            color: '#8b949e' },
 ];
+
+function scheduleNotifications() {
+  const now    = new Date();
+  const reminders = [
+    { hour: 12, minute: 0,  title: 'FitTracker Reminder', body: "Don't forget to log your lunch! 🍽️" },
+    { hour: 19, minute: 0,  title: 'FitTracker Reminder', body: 'Time to log dinner and check your goals! 💪' },
+    { hour: 21, minute: 0,  title: 'Daily Summary',        body: 'Log your mood and review today\'s progress 😊' },
+  ];
+  for (const r of reminders) {
+    const t = new Date(now);
+    t.setHours(r.hour, r.minute, 0, 0);
+    const ms = t.getTime() - now.getTime();
+    if (ms > 0) {
+      setTimeout(() => new Notification(r.title, { body: r.body, icon: '/pwa-192x192.png', badge: '/pwa-192x192.png' }), ms);
+    }
+  }
+}
 
 function adjustDate(date: string, delta: number) {
   const d = new Date(date);
@@ -79,16 +105,33 @@ export default function App() {
   const [loading, setLoading]   = useState(true);
   const [view, setView]         = useState<ViewType>('dashboard');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [, setTick] = useState(0);
+  const [, setTick]             = useState(0);
+  const [theme, setThemeState]  = useState<Theme>(getTheme);
+  const [showThemePicker, setShowThemePicker] = useState(false);
+  const [toast, setToast]       = useState<{ message: string; emoji: string; color: string } | null>(null);
+  const { fire } = useCelebration();
   const refresh = useCallback(() => setTick(t => t + 1), []);
 
   const foodEntries    = getFoodEntries();
   const workoutEntries = getWorkoutEntries();
   const weightEntries  = getWeightEntries();
   const glucoseEntries = getGlucoseEntries();
+  const moodEntries    = getMoodEntries();
   const profile        = getProfile();
 
+  function celebrate(message: string, emoji = '🎉', color = 'var(--green)', size: 'small' | 'big' = 'big') {
+    fire(size);
+    setToast({ message, emoji, color });
+  }
+
+  function changeTheme(t: Theme) {
+    setTheme(t);
+    setThemeState(t);
+    setShowThemePicker(false);
+  }
+
   useEffect(() => {
+    applyTheme(getTheme());
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) { setSyncUser(session.user.id); await loadFromSupabase(session.user.id); setSession(session); refresh(); }
       setLoading(false);
@@ -97,6 +140,17 @@ export default function App() {
       if (session) { setSyncUser(session.user.id); await loadFromSupabase(session.user.id); setSession(session); refresh(); }
       else { setSyncUser(null); clearLocalData(); setSession(null); refresh(); }
     });
+
+    // Request notification permission + schedule daily reminders
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(perm => {
+        if (perm !== 'granted') return;
+        scheduleNotifications();
+      });
+    } else if (Notification.permission === 'granted') {
+      scheduleNotifications();
+    }
+
     return () => subscription.unsubscribe();
   }, []);
 
@@ -113,10 +167,11 @@ export default function App() {
 
   const isToday   = selectedDate === format(new Date(), 'yyyy-MM-dd');
   const activeNav = NAV.find(n => n.view === view)!;
-  const showDate  = ['food', 'workout', 'dashboard', 'glucose'].includes(view);
+  const showDate  = ['food', 'workout', 'dashboard', 'glucose', 'mood'].includes(view);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}>
+      {toast && <CelebrationToast {...toast} onDone={() => setToast(null)} />}
 
       {/* ── Header ─────────────────────────────────────────────── */}
       <header style={{
@@ -147,6 +202,38 @@ export default function App() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Theme picker */}
+            <div style={{ position: 'relative' }}>
+              <button onClick={() => setShowThemePicker(p => !p)} title="Change theme"
+                style={{ width: 34, height: 34, borderRadius: 8, background: 'var(--card)',
+                  border: '1px solid var(--border)', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', cursor: 'pointer', color: 'var(--text2)' }}>
+                <Palette size={14} />
+              </button>
+              {showThemePicker && (
+                <div style={{
+                  position: 'absolute', top: 40, right: 0, zIndex: 200,
+                  background: 'var(--card)', border: '1px solid var(--border)',
+                  borderRadius: 10, padding: 8, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 130,
+                  boxShadow: '0 8px 32px rgba(0,0,0,.4)',
+                }}>
+                  {THEMES.map(t => (
+                    <button key={t.id} onClick={() => changeTheme(t.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px',
+                        borderRadius: 7, border: 'none', cursor: 'pointer',
+                        background: theme === t.id ? 'var(--card2)' : 'transparent',
+                        color: theme === t.id ? 'var(--text)' : 'var(--text2)',
+                        fontWeight: theme === t.id ? 700 : 400, fontSize: 13,
+                      }}>
+                      <div style={{ width: 14, height: 14, borderRadius: '50%', background: t.preview, border: '2px solid var(--border)', flexShrink: 0 }} />
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Date picker */}
             {showDate && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 4,
@@ -245,9 +332,12 @@ export default function App() {
             {view === 'food'       && <FoodTracker entries={foodEntries} onUpdate={refresh} selectedDate={selectedDate} />}
             {view === 'workout'    && <WorkoutTracker entries={workoutEntries} onUpdate={refresh} selectedDate={selectedDate} userWeight={profile?.currentWeight || 70} />}
             {view === 'glucose'    && <GlucoseTracker entries={glucoseEntries} onUpdate={refresh} selectedDate={selectedDate} />}
+            {view === 'mood'       && <MoodTracker entries={moodEntries} onUpdate={refresh} selectedDate={selectedDate} />}
+            {view === 'coach'      && <AICoach foodEntries={foodEntries} workoutEntries={workoutEntries} weightEntries={weightEntries} glucoseEntries={glucoseEntries} moodEntries={moodEntries} profile={profile} />}
+            {view === 'challenges' && <Challenges foodEntries={foodEntries} workoutEntries={workoutEntries} glucoseEntries={glucoseEntries} moodEntries={moodEntries} profile={profile} />}
             {view === 'trends'     && <TrendAnalysis foodEntries={foodEntries} workoutEntries={workoutEntries} weightEntries={weightEntries} glucoseEntries={glucoseEntries} profile={profile} />}
             {view === 'prediction' && <WeightPrediction foodEntries={foodEntries} workoutEntries={workoutEntries} weightEntries={weightEntries} profile={profile} />}
-            {view === 'profile'    && <ProfileSetup profile={profile} onSave={refresh} />}
+            {view === 'profile'    && <ProfileSetup profile={profile} onSave={() => { refresh(); celebrate('Profile saved!', '✅', 'var(--green)', 'small'); }} />}
           </main>
         </div>
       </div>

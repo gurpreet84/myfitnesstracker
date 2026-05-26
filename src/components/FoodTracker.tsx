@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { Plus, Trash2, Apple, Search, Sparkles, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Apple, Search, Sparkles, Loader2, ScanLine } from 'lucide-react';
 import type { FoodEntry } from '../types';
 import { saveFoodEntry, deleteFoodEntry, generateId } from '../utils/storage';
 import { getGlycemicCategory } from '../utils/calculations';
 import { lookupFoodNutrition } from '../utils/aiFood';
+import BarcodeScanner, { type ScannedFood } from './BarcodeScanner';
 
 interface Props {
   entries: FoodEntry[];
@@ -160,6 +161,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
+  const [showScanner, setShowScanner] = useState(false);
 
   const dayEntries = entries
     .filter(e => e.date === selectedDate)
@@ -168,6 +170,28 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
   const filtered = COMMON_FOODS.filter(f =>
     f.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  function fillFood(food: { name: string; calories: number; glycemicIndex: number; glycemicLoad: number; carbs: number; protein: number; fat: number; servingSize: string }) {
+    setForm(f => ({
+      ...f,
+      name: food.name,
+      calories: String(food.calories),
+      glycemicIndex: String(food.glycemicIndex),
+      glycemicLoad: String(food.glycemicLoad),
+      carbs: String(food.carbs),
+      protein: String(food.protein),
+      fat: String(food.fat),
+      servingSize: food.servingSize,
+    }));
+    setSearch(food.name);
+    setShowSuggestions(false);
+    setShowForm(true);
+  }
+
+  function handleBarcodeResult(food: ScannedFood) {
+    fillFood(food);
+    setShowScanner(false);
+  }
 
   function selectFood(food: typeof COMMON_FOODS[0]) {
     setForm(f => ({
@@ -184,6 +208,7 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
     setSearch(food.name);
     setShowSuggestions(false);
   }
+
 
   async function lookupWithAI() {
     const query = search.trim() || form.name.trim();
@@ -264,11 +289,18 @@ export default function FoodTracker({ entries, onUpdate, selectedDate }: Props) 
       </div>
 
       {/* Add button */}
-      <div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button type="button" onClick={() => setShowForm(!showForm)} className="btn btn-primary">
           <Plus size={16} /> Log Food
         </button>
+        <button type="button" onClick={() => setShowScanner(true)} className="btn btn-ghost">
+          <ScanLine size={16} /> Scan Barcode
+        </button>
       </div>
+
+      {showScanner && (
+        <BarcodeScanner onResult={handleBarcodeResult} onClose={() => setShowScanner(false)} />
+      )}
 
       {/* Add form */}
       {showForm && (

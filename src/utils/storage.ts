@@ -1,4 +1,4 @@
-import type { FoodEntry, WorkoutEntry, WeightEntry, UserProfile, GlucoseEntry } from '../types';
+import type { FoodEntry, WorkoutEntry, WeightEntry, UserProfile, GlucoseEntry, MoodEntry } from '../types';
 import {
   upsertFoodEntry, removeFoodEntry,
   upsertWorkoutEntry, removeWorkoutEntry,
@@ -7,11 +7,12 @@ import {
 } from './db';
 
 export const STORAGE_KEYS = {
-  food: 'fit_food_entries',
+  food:    'fit_food_entries',
   workout: 'fit_workout_entries',
-  weight: 'fit_weight_entries',
+  weight:  'fit_weight_entries',
   profile: 'fit_user_profile',
   glucose: 'fit_glucose_entries',
+  mood:    'fit_mood_entries',
 } as const;
 
 // Current authenticated user — set by App on login/logout
@@ -91,6 +92,20 @@ export const saveGlucoseEntry = (entry: GlucoseEntry): void => {
 export const deleteGlucoseEntry = (id: string): void => {
   save(STORAGE_KEYS.glucose, getGlucoseEntries().filter(e => e.id !== id));
   if (_uid) removeGlucoseEntry(_uid, id);
+};
+
+// ─── Mood ─────────────────────────────────────────────────────────────────────
+export const getMoodEntries = (): MoodEntry[] => load<MoodEntry>(STORAGE_KEYS.mood);
+
+export const saveMoodEntry = (entry: MoodEntry): void => {
+  const entries = getMoodEntries();
+  const idx = entries.findIndex(e => e.id === entry.id);
+  if (idx >= 0) entries[idx] = entry; else entries.push(entry);
+  save(STORAGE_KEYS.mood, entries);
+};
+
+export const deleteMoodEntry = (id: string): void => {
+  save(STORAGE_KEYS.mood, getMoodEntries().filter(e => e.id !== id));
 };
 
 // ─── Clear all local data on logout ──────────────────────────────────────────

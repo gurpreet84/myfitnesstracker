@@ -1,7 +1,7 @@
 export interface FoodEntry {
   id: string;
-  date: string; // ISO date string YYYY-MM-DD
-  time: string; // HH:MM
+  date: string;
+  time: string;
   name: string;
   calories: number;
   glycemicIndex: number;
@@ -19,9 +19,9 @@ export interface WorkoutEntry {
   time: string;
   type: WorkoutType;
   name: string;
-  duration: number; // minutes
+  duration: number;
   caloriesBurned: number;
-  distance?: number; // km
+  distance?: number;
   steps?: number;
   intensity: 'low' | 'moderate' | 'high';
   notes?: string;
@@ -32,7 +32,7 @@ export type WorkoutType = 'running' | 'walking' | 'cycling' | 'swimming' | 'weig
 export interface WeightEntry {
   id: string;
   date: string;
-  weight: number; // kg
+  weight: number;
   bmi?: number;
 }
 
@@ -40,12 +40,12 @@ export interface UserProfile {
   name: string;
   age: number;
   gender: 'male' | 'female' | 'other';
-  height: number; // cm
-  currentWeight: number; // kg
-  targetWeight: number; // kg
+  height: number;
+  currentWeight: number;
+  targetWeight: number;
   activityLevel: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extra_active';
   dailyCalorieGoal: number;
-  dailyCalorieDeficitGoal: number; // target deficit per day
+  dailyCalorieDeficitGoal: number;
 }
 
 export interface DailySummary {
@@ -65,11 +65,23 @@ export interface DailySummary {
 
 export interface GlucoseEntry {
   id: string;
-  date: string; // YYYY-MM-DD
-  time: string; // HH:MM
-  value: number; // mg/dL
+  date: string;
+  time: string;
+  value: number;
   context: 'fasting' | 'before_meal' | 'after_meal' | 'bedtime' | 'random';
   notes?: string;
 }
 
-export type ViewType = 'dashboard' | 'food' | 'workout' | 'glucose' | 'trends' | 'prediction' | 'profile';
+export interface MoodEntry {
+  id: string;
+  date: string;
+  time: string;
+  mood: 1 | 2 | 3 | 4 | 5;
+  energy: 1 | 2 | 3 | 4 | 5;
+  notes?: string;
+}
+
+export type ViewType =
+  | 'dashboard' | 'food' | 'workout' | 'glucose'
+  | 'trends' | 'prediction' | 'profile'
+  | 'coach' | 'challenges' | 'mood';
