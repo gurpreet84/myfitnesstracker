@@ -14,13 +14,26 @@ export default function Auth() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true); setError(''); setMessage('');
-    if (mode === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setError(error.message);
-    } else {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) setError(error.message);
-      else setMessage('Account created! Check your email to confirm, then sign in.');
+    try {
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Request timed out — check your internet connection or try again.')), 12000)
+      );
+      if (mode === 'login') {
+        const { error } = await Promise.race([
+          supabase.auth.signInWithPassword({ email, password }),
+          timeout,
+        ]);
+        if (error) setError(error.message);
+      } else {
+        const { error } = await Promise.race([
+          supabase.auth.signUp({ email, password }),
+          timeout,
+        ]);
+        if (error) setError(error.message);
+        else setMessage('Account created! Check your email to confirm, then sign in.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Network error — Supabase may be unreachable.');
     }
     setLoading(false);
   }
@@ -131,6 +144,20 @@ export default function Auth() {
         <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text3)', marginTop: 16 }}>
           Your data is encrypted and stored securely.
         </p>
+
+        {/* Config diagnostic — only shows when env vars are missing */}
+        {(!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) && (
+          <div style={{
+            marginTop: 12, padding: '10px 14px', borderRadius: 8,
+            background: 'rgba(245,158,11,.1)', border: '1px solid rgba(245,158,11,.3)',
+            fontSize: 12, color: '#fbbf24',
+          }}>
+            ⚠️ Supabase environment variables are missing. Set{' '}
+            <code style={{ fontFamily: 'monospace' }}>VITE_SUPABASE_URL</code> and{' '}
+            <code style={{ fontFamily: 'monospace' }}>VITE_SUPABASE_ANON_KEY</code>{' '}
+            in your Vercel project settings, then redeploy.
+          </div>
+        )}
       </div>
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
