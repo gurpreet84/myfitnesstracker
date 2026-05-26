@@ -10,7 +10,11 @@ export const THEMES: { id: Theme; label: string; preview: string }[] = [
 ];
 
 export function getTheme(): Theme {
-  return (localStorage.getItem(KEY) as Theme) || 'dark';
+  try {
+    return (localStorage.getItem(KEY) as Theme) || 'dark';
+  } catch {
+    return 'dark';
+  }
 }
 
 export function applyTheme(theme: Theme): void {

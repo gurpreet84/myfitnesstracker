@@ -16,23 +16,27 @@ export function useCelebration() {
   const frameRef  = useRef<number>(0);
 
   useEffect(() => {
-    const canvas = document.createElement('canvas');
-    canvas.className = 'celebration-canvas';
-    canvas.style.pointerEvents = 'none';
-    document.body.appendChild(canvas);
-    canvasRef.current = canvas;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.className = 'celebration-canvas';
+      canvas.style.pointerEvents = 'none';
+      document.body.appendChild(canvas);
+      canvasRef.current = canvas;
 
-    const resize = () => {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-    return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(frameRef.current);
-      canvas.remove();
-    };
+      const resize = () => {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+      };
+      resize();
+      window.addEventListener('resize', resize);
+      return () => {
+        window.removeEventListener('resize', resize);
+        cancelAnimationFrame(frameRef.current);
+        canvas.remove();
+      };
+    } catch (e) {
+      console.warn('Celebration canvas error:', e);
+    }
   }, []);
 
   const fire = useCallback((intensity: 'small' | 'big' = 'big') => {
